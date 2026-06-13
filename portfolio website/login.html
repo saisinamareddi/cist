@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIST Portal - CHAITANYA Institute of Science and Technology</title>
+  <link rel="icon" type="image/png" href="clg/logo.png">
+  <link rel="shortcut icon" type="image/png" href="clg/logo.png">
+  
+  <!-- Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;700;800&family=Poppins:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap">
+  
+  <!-- Custom Styling (White/Gold and Dark Mode support) -->
+  <style>
+    :root {
+      --primary: #2563EB;
+      --secondary: #FF6B35;
+      --dark: #1e293b;
+      --light-gray: #f8fafc;
+      --border-color: rgba(212, 163, 89, 0.22);
+      --eggshell: #FAF6EB;
+      --success: #10B981;
+      --danger: #EF4444;
+      --card-bg: #ffffff;
+      --table-text: #475569;
+    }
+
+    /* Dark Theme Variable Overrides */
+    body.dark-theme {
+      --eggshell: #0b0f19;
+      --dark: #f8fafc;
+      --light-gray: #1e293b;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --card-bg: #111827;
+      --table-text: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: var(--eggshell);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      color: var(--dark);
+      position: relative;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Background blobs */
+    .blob {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.1;
+      z-index: 1;
+      pointer-events: none;
+    }
+    
+    .blob-blue {
+      background-color: var(--primary);
+      top: -150px;
+      right: -100px;
+    }
+
+    .blob-orange {
+      background-color: var(--secondary);
+      bottom: -200px;
+      left: -150px;
+    }
+
+    /* Center wrapper for authentication card */
+    .page-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      z-index: 2;
+    }
+
+    /* LOGIN CARD CONTAINER */
+    .login-container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 2rem;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
+      padding: 3rem 2.5rem;
+      transition: opacity 0.4s ease, transform 0.4s ease, background-color 0.3s, border-color 0.3s;
+    }
+
+    .login-container.hidden {
+      display: none;
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 575px) {
+      .login-container {
+        padding: 2.25rem 1.5rem;
+        border-radius: 1.5rem;
+      }
+    }
+
+    /* Branding Header */
+    .brand-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 2.25rem;
+    }
+
+    .logo-wrapper {
+      width: 84px;
+      height: 84px;
+      background: #ffffff;
+      border-radius: 50%;
+      padding: 6px;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      border: 2px solid rgba(212, 163, 89, 0.15);
+      transition: transform 0.3s ease;
+    }
+
+    .logo-wrapper:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-title {
+      font-family: "Outfit", sans-serif;
+      font-size: 1.65rem;
+      font-weight: 900;
+      color: var(--dark);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .brand-subtitle {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-top: 0.4rem;
+    }
+
+    /* Tab Switcher */
+    .tab-container {
+      background: var(--light-gray);
+      border: 1px solid var(--border-color);
+      border-radius: 50px;
+      display: flex;
+      padding: 4px;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      font-family: "Poppins", sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      color: #64748b;
+      border-radius: 50px;
+      z-index: 2;
+      transition: color 0.3s ease;
+      text-align: center;
+    }
+
+    .tab-btn.active {
+      color: #ffffff;
+    }
+
+    .tab-glider {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      height: calc(100% - 8px);
+      width: calc(50% - 4px);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 50px;
+      z-index: 1;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.85rem 1.2rem;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      font-family: "Poppins", sans-serif;
+      font-size: 0.95rem;
+      background-color: var(--light-gray);
+      transition: all 0.3s ease;
+      outline: none;
+      color: var(--dark);
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      background-color: var(--card-bg);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .password-input {
+      padding-right: 3.25rem;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 1.2rem;
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.25rem;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s ease;
+    }
+
+    .toggle-password:hover {
+      color: var(--primary);
+    }
+
+    /* Alerts */
+    .alert-banner {
+      background-color: #fef2f2;
+      border: 1px solid #fee2e2;
+      color: var(--danger);
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.25rem;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Helpers */
+    .helpers-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      font-size: 0.85rem;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .checkbox-input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .forgot-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .forgot-link:hover {
+      color: var(--secondary);
+      text-decoration: underline;
+    }
+
+    /* Submit Button */
+    .submit-btn {
+      width: 100%;
+      padding: 0.95rem;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: #ffffff;
+      font-family: "Poppins", sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.2);
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .back-home {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+      font-size: 0.88rem;
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .back-home:hover {
+      color: var(--primary);
+    }
+
+
+    /* STUDENT PORTAL DASHBOARD MAIN GRID */
+    .attendance-dashboard {
+      display: none;
+      opacity: 0;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      z-index: 5;
+      transition: opacity 0.5s ease;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 2.5rem;
+    }
+
+    .attendance-dashboard.active {
+      display: grid;
+      opacity: 1;
+    }
+
+    @media (max-width: 991px) {
+      .attendance-dashboard {
+        grid-template-columns: 1fr;
+        padding: 2rem 1rem;
+        gap: 2rem;
+      }
+    }
+
+    /* Column wrappers */
+    .dashboard-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* REDESIGNED PORTAL CARDS */
+    .portal-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(212, 163, 89, 0.04);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    /* Card 1: Attendance card header */
+    .card-top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .card-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .exit-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-family: "Outfit", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 750;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      transition: color 0.2s ease;
+    }
+
+    .exit-btn:hover {
+      color: var(--danger);
+    }
+
+    .header-sun-icon {
+      font-size: 1.15rem;
+      color: #64748b;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.3s ease;
+    }
+
+    .header-sun-icon:hover {
+      transform: rotate(30deg);
+    }
+
+    .student-title-name {
+      font-family: "Outfit", sans-serif;
+      font-size: 0.95rem;
+      font-weight: 850;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Attendance card body */
+    .total-attendance-body {
+      margin-bottom: 2.25rem;
+    }
+
+    .total-attendance-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .total-attendance-percent {
+      font-family: "Outfit", sans-serif;
+      font-size: 5.5rem;
+      font-weight: 900;
+      color: var(--dark);
+      line-height: 1;
+      display: flex;
+      align-items: baseline;
+      letter-spacing: -0.04em;
+    }
+
+    .percent-symbol {
+      font-size: 2.25rem;
+      color: #64748b;
+      margin-left: 0.25rem;
+      font-weight: 700;
+    }
+
+    .total-attendance-footer {
+      font-size: 0.78rem;
+      font-weight: 750;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 1.25rem;
+      margin-top: auto;
+    }
+
+    .total-attendance-footer span {
+      color: var(--dark);
+      font-weight: 800;
+    }
+
+
+    /* Card 2: Calculator Card */
+    .calculator-title {
+      font-family: "Outfit", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 850;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 1.75rem;
+    }
+
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .calc-label {
+      font-size: 0.8rem;
+      font-weight: 750;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .calc-controls {
+      display: flex;
+      align-items: center;
+      background: var(--light-gray);
+      border: 1.5px solid var(--border-color);
+      border-radius: 8px;
+      padding: 2px;
+    }
+
+    .calc-btn {
+      width: 28px;
+      height: 28px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dark);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+      transition: all 0.2s;
+    }
+
+    .calc-btn:hover {
+      background: var(--light-gray);
+      color: var(--primary);
+    }
+
+    .calc-val {
+      min-width: 44px;
+      text-align: center;
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--dark);
+    }
+
+    .calc-footer-msg {
+      margin-top: 1.75rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--danger);
+      line-height: 1.45;
+    }
+
+    .calc-footer-msg.safe {
+      color: var(--success);
+    }
+
+
+    /* Card 3: Tabs and Table Card (Right) */
+    .tabs-header-row {
+      display: flex;
+      gap: 1.5rem;
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-head {
+      font-family: "Outfit", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 850;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: -2px;
+    }
+
+    /* Sub-controls Filter bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .today-switch-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--light-gray);
+      border: 1px solid var(--border-color);
+      border-radius: 50px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+    }
+
+    .switch-toggle {
+      width: 28px;
+      height: 16px;
+      background-color: #cbd5e1;
+      border-radius: 50px;
+      position: relative;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .switch-toggle.active {
+      background-color: var(--primary);
+    }
+
+    .switch-circle {
+      width: 12px;
+      height: 12px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+    }
+
+    .switch-toggle.active .switch-circle {
+      transform: translateX(12px);
+    }
+
+    .filter-btn {
+      background: var(--light-gray);
+      border: 1px solid var(--border-color);
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: var(--dark);
+      color: var(--card-bg);
+      border-color: var(--dark);
+    }
+
+    /* Unified rounded table structure */
+    .table-container {
+      border: 2px solid var(--border-color);
+      border-radius: 1.25rem;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(212, 163, 89, 0.02);
+      margin-bottom: 1.5rem;
+    }
+
+    .grid-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card-bg);
+    }
+
+    .grid-table th, .grid-table td {
+      border: 1px solid var(--border-color);
+      padding: 0.8rem 0.95rem;
+      text-align: center;
+      font-size: 0.88rem;
+    }
+
+    .grid-table th {
+      background-color: var(--card-bg);
+      font-weight: 750;
+      color: var(--dark);
+    }
+
+    .grid-table td {
+      font-weight: 600;
+      color: var(--table-text);
+    }
+
+    .grid-table tr:hover {
+      background-color: var(--light-gray);
+    }
+
+    .grid-table tr.today-row {
+      background-color: rgba(37, 99, 235, 0.06);
+    }
+
+    .grid-table tr.today-row td {
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    /* Present / Absent cell colors */
+    .val-p {
+      color: var(--success);
+      font-weight: 800;
+    }
+
+    .val-a {
+      color: var(--danger);
+      font-weight: 800;
+    }
+
+    .val-h {
+      color: #94a3b8;
+      font-weight: 650;
+    }
+
+    /* Weekly Stats Summary panel (New Board) */
+    .stats-summary-panel {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 1.25rem;
+      padding: 1.25rem;
+      background: var(--light-gray);
+    }
+
+    @media (max-width: 575px) {
+      .stats-summary-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .summary-lbl {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .summary-val {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--dark);
+    }
+
+    /* Overall Attendance View layout */
+    .overall-panel {
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .overall-panel.active {
+      display: flex;
+    }
+
+    .overall-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 575px) {
+      .overall-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .overall-box {
+      background: var(--light-gray);
+      border: 2px solid var(--border-color);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .overall-num {
+      font-size: 1.75rem;
+      font-weight: 850;
+      color: var(--dark);
+      margin-bottom: 0.25rem;
+    }
+
+    .overall-num.highlight {
+      color: var(--primary);
+    }
+
+    .overall-lbl {
+      font-size: 0.72rem;
+      font-weight: 750;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background decorations -->
+  <div class="blob blob-blue"></div>
+  <div class="blob blob-orange"></div>
+
+  <!-- Page Wrapper for Login -->
+  <div class="page-wrapper" id="loginPageWrapper">
+    
+    <!-- LOGIN INTERACTIVE CARD -->
+    <div class="login-container" id="loginCard">
+      
+      <!-- Brand Header -->
+      <div class="brand-header">
+        <div class="logo-wrapper">
+          <img src="clg/logo.png" alt="CIST Logo">
+        </div>
+        <h1 class="brand-title">CHAITANYA</h1>
+        <span class="brand-subtitle">Institute of Science & Technology</span>
+      </div>
+
+      <!-- Switch modes Student/Faculty -->
+      <div class="tab-container">
+        <div class="tab-glider" id="tabGlider"></div>
+        <button class="tab-btn active" id="studentTab" onclick="switchTab('student')">Student Login</button>
+        <button class="tab-btn" id="facultyTab" onclick="switchTab('faculty')">Faculty Login</button>
+      </div>
+
+      <!-- Error Alerts -->
+      <div class="alert-banner" id="errorAlert">
+        <span style="font-size: 1.1rem; line-height: 1;">⚠️</span>
+        <span id="errorAlertText">Invalid Roll Number or Password.</span>
+      </div>
+
+      <!-- Inputs Form -->
+      <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+        <!-- Roll Number / ID -->
+        <div class="form-group">
+          <label class="form-label" id="idLabel" for="userIdentifier">Roll Number / Registration ID</label>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              id="userIdentifier" 
+              class="form-input" 
+              placeholder="Enter your college Roll Number" 
+              required
+            >
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-wrapper">
+            <input 
+              type="password" 
+              id="password" 
+              class="form-input password-input" 
+              placeholder="Enter your password" 
+              required
+            >
+            <button 
+              type="button" 
+              class="toggle-password" 
+              id="togglePasswordBtn" 
+              onclick="togglePasswordVisibility()"
+            >
+              Show
+            </button>
+          </div>
+        </div>
+
+        <!-- Checkbox / Forgot row -->
+        <div class="helpers-row">
+          <label class="checkbox-label">
+            <input type="checkbox" class="checkbox-input">
+            Remember me
+          </label>
+          <a href="javascript:void(0)" class="forgot-link" onclick="handleForgotPassword()">Forgot Password?</a>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <span id="btnText">Sign In to Student Portal</span>
+        </button>
+      </form>
+
+      <!-- Return back to index.html -->
+      <a href="index.html" class="back-home">
+        &larr; Back to Main Website
+      </a>
+
+      <!-- Footer Copy -->
+      <div class="login-footer">
+        &copy; 2025 CHAITANYA CIST. All Rights Reserved.
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- STUDENT PORTAL DASHBOARD (REDESIGNED IN WHITE & LIGHT GOLD THEME WITH DARK TOGGLE) -->
+  <div class="attendance-dashboard" id="dashboardPanel">
+    
+    <!-- Left Column: Total Attendance and Target Calculator -->
+    <div class="dashboard-col">
+      
+      <!-- Card 1: Total Attendance readout -->
+      <div class="portal-card">
+        <div class="card-top-header">
+          <div class="card-header-left">
+            <button class="exit-btn" onclick="handleLogOut()">
+              &larr; Exit
+            </button>
+            <span class="header-sun-icon" id="themeToggleBtn" onclick="toggleThemeMode()">☀️</span>
+          </div>
+          <span class="student-title-name" id="studentHeaderName">Sinamareddi Sai</span>
+        </div>
+
+        <div class="total-attendance-body">
+          <div class="total-attendance-label">Total Attendance</div>
+          <div class="total-attendance-percent" id="readoutPercent">
+            68.33<span class="percent-symbol">%</span>
+          </div>
+        </div>
+
+        <div class="total-attendance-footer">
+          Attended <span id="readoutAttended">82</span> / <span id="readoutConducted">120</span> Classes
+        </div>
+      </div>
+
+      <!-- Card 2: Interactive Target Calculator -->
+      <div class="portal-card">
+        <h2 class="calculator-title">Target Calculator</h2>
+
+        <!-- Target Percent Control Row -->
+        <div class="calc-row">
+          <span class="calc-label">Target %</span>
+          <div class="calc-controls">
+            <button type="button" class="calc-btn" onclick="adjustTarget(-1)">&minus;</button>
+            <span class="calc-val" id="targetVal">75</span>
+            <button type="button" class="calc-btn" onclick="adjustTarget(1)">&plus;</button>
+          </div>
+        </div>
+
+        <!-- Classes Per Day Control Row (Capped at 7) -->
+        <div class="calc-row">
+          <span class="calc-label">Classes / Day</span>
+          <div class="calc-controls">
+            <button type="button" class="calc-btn" onclick="adjustClassesPerDay(-1)">&minus;</button>
+            <span class="calc-val" id="classesPerDayVal">7</span>
+            <button type="button" class="calc-btn" onclick="adjustClassesPerDay(1)">&plus;</button>
+          </div>
+        </div>
+
+        <!-- Live Projections footer -->
+        <div class="calc-footer-msg" id="calcOutputMsg">
+          You need to attend 32 classes (~4.6 days).
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Tabs (Only Attendance) and Data Table -->
+    <div class="dashboard-col">
+      
+      <div class="portal-card">
+        
+        <!-- Tab Navigation Header (Exams removed) -->
+        <div class="tabs-header-row">
+          <div class="tab-head active">Attendance</div>
+        </div>
+
+        <!-- Sub-filters today / week / overall -->
+        <div class="filter-bar">
+          <div class="today-switch-container">
+            Today
+            <div class="switch-toggle active" id="todaySwitch" onclick="toggleTodayFilter()">
+              <div class="switch-circle"></div>
+            </div>
+          </div>
+          <button class="filter-btn active" id="filterWeekBtn" onclick="setFilterMode('week')">week</button>
+          <button class="filter-btn" id="filterOverallBtn" onclick="setFilterMode('overall')">overall</button>
+        </div>
+
+        <!-- Panel 1: Week Mode (Table and Dynamic Weekly Stats Board) -->
+        <div id="weekViewPanel">
+          <!-- White bordered Day/Status table -->
+          <div class="table-container">
+            <table class="grid-table">
+              <thead>
+                <tr>
+                  <th>Day</th>
+                  <th>P/A</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceTableBody">
+                <tr id="row-1">
+                  <td>Monday</td>
+                  <td class="val-p" id="cell-1">P</td>
+                </tr>
+                <tr id="row-2">
+                  <td>Tuesday</td>
+                  <td class="val-a" id="cell-2">A</td>
+                </tr>
+                <tr id="row-3">
+                  <td>Wednesday</td>
+                  <td class="val-p" id="cell-3">P</td>
+                </tr>
+                <tr id="row-4">
+                  <td>Thursday</td>
+                  <td class="val-p" id="cell-4">P</td>
+                </tr>
+                <tr id="row-5">
+                  <td>Friday</td>
+                  <td class="val-a" id="cell-5">A</td>
+                </tr>
+                <tr id="row-6">
+                  <td>Saturday</td>
+                  <td class="val-p" id="cell-6">P</td>
+                </tr>
+                <tr id="row-0">
+                  <td>Sunday</td>
+                  <td class="val-h" id="cell-0">H</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Weekly Stats Summary Panel (New Board) -->
+          <div class="stats-summary-panel">
+            <div class="summary-item">
+              <span class="summary-lbl">Total working days</span>
+              <span class="summary-val" id="weekTotalWorking">6 Days</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-lbl">Present days</span>
+              <span class="summary-val" id="weekPresent">4 Days</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-lbl">Absent days</span>
+              <span class="summary-val" id="weekAbsent">2 Days</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-lbl">Week Attendance</span>
+              <span class="summary-val" id="weekPercentage" style="color: var(--primary);">66.67%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: Overall Attendance View -->
+        <div class="overall-panel" id="overallViewPanel">
+          <div class="overall-grid">
+            <div class="overall-box">
+              <div class="overall-num highlight" id="overallConducted">120</div>
+              <div class="overall-lbl">Conducted Classes</div>
+            </div>
+            <div class="overall-box">
+              <div class="overall-num" id="overallAttended">82</div>
+              <div class="overall-lbl">Attended Classes</div>
+            </div>
+            <div class="overall-box">
+              <div class="overall-num" id="overallAbsent" style="color: var(--danger);">38</div>
+              <div class="overall-lbl">Absent Classes</div>
+            </div>
+            <div class="overall-box">
+              <div class="overall-num" id="overallPercent" style="color: var(--success);">68.33%</div>
+              <div class="overall-lbl">Overall Attendance</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- PORTAL SCRIPTS & CALCULATOR LOGIC -->
+  <script>
+    // College Student Credentials Database (Parisam Dhanasri -> Sinamareddi Sai)
+    const studentDb = {
+      "23S05A5403": {
+        roll: "23S05A5403",
+        password: "23S05A5403",
+        name: "Sinamareddi Sai",
+        branch: "Computer Science & Engineering",
+        conducted: 120,
+        attended: 82,
+        weekly: {
+          1: "P", // Mon
+          2: "A", // Tue
+          3: "P", // Wed
+          4: "P", // Thu
+          5: "A", // Fri
+          6: "P", // Sat
+          0: "H"  // Sun
+        }
+      },
+      "22CSE101": {
+        roll: "22CSE101",
+        password: "password",
+        name: "RAHUL KUMAR",
+        branch: "Computer Science & Engineering",
+        conducted: 100,
+        attended: 68,
+        weekly: {
+          1: "P",
+          2: "P",
+          3: "A",
+          4: "A",
+          5: "P",
+          6: "P",
+          0: "H"
+        }
+      },
+      "22ECE102": {
+        roll: "22ECE102",
+        password: "password",
+        name: "PRIYA SHARMA",
+        branch: "Electronics & Communication Engineering",
+        conducted: 100,
+        attended: 81,
+        weekly: {
+          1: "P",
+          2: "P",
+          3: "P",
+          4: "P",
+          5: "A",
+          6: "P",
+          0: "H"
+        }
+      },
+      "22ME103": {
+        roll: "22ME103",
+        password: "password",
+        name: "ARJUN REDDY",
+        branch: "Mechanical Engineering",
+        conducted: 100,
+        attended: 92,
+        weekly: {
+          1: "P",
+          2: "P",
+          3: "P",
+          4: "P",
+          5: "P",
+          6: "P",
+          0: "H"
+        }
+      }
+    };
+
+    let currentMode = 'student';
+    let activeStudent = null;
+    let currentTarget = 75;
+    let currentClassesPerDay = 7;
+    let isTodayFilterActive = true;
+    let currentFilterMode = 'week'; // 'week' or 'overall'
+
+    // Switch login panel Student vs Faculty
+    function switchTab(mode) {
+      if (currentMode === mode) return;
+      currentMode = mode;
+
+      const glider = document.getElementById('tabGlider');
+      const studentTab = document.getElementById('studentTab');
+      const facultyTab = document.getElementById('facultyTab');
+      const idLabel = document.getElementById('idLabel');
+      const userIdentifier = document.getElementById('userIdentifier');
+      const btnText = document.getElementById('btnText');
+      const errorAlert = document.getElementById('errorAlert');
+
+      errorAlert.style.display = 'none';
+
+      if (mode === 'student') {
+        glider.style.transform = 'translateX(0)';
+        studentTab.classList.add('active');
+        facultyTab.classList.remove('active');
+        
+        idLabel.textContent = "Roll Number / Registration ID";
+        userIdentifier.placeholder = "Enter your college Roll Number";
+        btnText.textContent = "Sign In to Student Portal";
+      } else {
+        glider.style.transform = 'translateX(100%)';
+        facultyTab.classList.add('active');
+        studentTab.classList.remove('active');
+        
+        idLabel.textContent = "Faculty Employee ID";
+        userIdentifier.placeholder = "Enter your Employee ID";
+        btnText.textContent = "Sign In to Faculty Portal";
+      }
+
+      userIdentifier.value = '';
+      document.getElementById('password').value = '';
+    }
+
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('password');
+      const toggleBtn = document.getElementById('togglePasswordBtn');
+
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleBtn.textContent = 'Hide';
+      } else {
+        passwordInput.type = 'password';
+        toggleBtn.textContent = 'Show';
+      }
+    }
+
+    // Process authentication
+    function handleLoginSubmit(event) {
+      event.preventDefault();
+      
+      const identifier = document.getElementById('userIdentifier').value.trim();
+      const password = document.getElementById('password').value;
+      const errorAlert = document.getElementById('errorAlert');
+      const errorAlertText = document.getElementById('errorAlertText');
+
+      errorAlert.style.display = 'none';
+
+      if (currentMode === 'faculty') {
+        errorAlertText.textContent = "Faculty ERP access is restricted under development database rules.";
+        errorAlert.style.display = 'flex';
+        return;
+      }
+
+      const student = studentDb[identifier];
+      if (student && student.password === password) {
+        activeStudent = student;
+        loadRedesignedPortal();
+      } else {
+        errorAlertText.textContent = "Invalid student Roll Number or password credentials.";
+        errorAlert.style.display = 'flex';
+      }
+    }
+
+    // Redesigned Portal Loader
+    function loadRedesignedPortal() {
+      // Set name
+      document.getElementById('studentHeaderName').textContent = activeStudent.name;
+      
+      // Update readout details
+      document.getElementById('readoutAttended').textContent = activeStudent.attended;
+      document.getElementById('readoutConducted').textContent = activeStudent.conducted;
+      
+      const percent = (activeStudent.attended / activeStudent.conducted) * 100;
+      document.getElementById('readoutPercent').innerHTML = `${percent.toFixed(2)}<span class="percent-symbol">%</span>`;
+
+      // Set default inputs
+      currentTarget = 75;
+      currentClassesPerDay = 7;
+      document.getElementById('targetVal').textContent = currentTarget;
+      document.getElementById('classesPerDayVal').textContent = currentClassesPerDay;
+
+      // Reset filter state
+      currentFilterMode = 'week';
+      document.getElementById('filterWeekBtn').classList.add('active');
+      document.getElementById('filterOverallBtn').classList.remove('active');
+      document.getElementById('weekViewPanel').style.display = 'block';
+      document.getElementById('overallViewPanel').classList.remove('active');
+
+      // Populate weekly table and board
+      populateWeeklyTable();
+
+      // Recalculate values
+      recalculateAttendanceTargets();
+
+      // View animation transitions
+      const loginPageWrapper = document.getElementById('loginPageWrapper');
+      const loginCard = document.getElementById('loginCard');
+      const dashboardPanel = document.getElementById('dashboardPanel');
+
+      loginCard.style.opacity = '0';
+      loginCard.style.transform = 'scale(0.95)';
+      
+      setTimeout(() => {
+        loginPageWrapper.style.display = 'none';
+        dashboardPanel.style.display = 'grid';
+        // Force reflow
+        dashboardPanel.offsetHeight;
+        dashboardPanel.classList.add('active');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 400);
+    }
+
+    // Populate table cells and weekly stats based on active student
+    function populateWeeklyTable() {
+      const todayDay = new Date().getDay(); // 0 is Sunday, 1 is Monday...
+      let workingDays = 0;
+      let presentDays = 0;
+      let absentDays = 0;
+
+      for (let day in activeStudent.weekly) {
+        const row = document.getElementById(`row-${day}`);
+        const cell = document.getElementById(`cell-${day}`);
+        const statusVal = activeStudent.weekly[day];
+
+        // Clean today styles
+        row.classList.remove('today-row');
+        const oldTag = row.querySelector('.today-tag');
+        if (oldTag) oldTag.remove();
+
+        if (cell) {
+          cell.textContent = statusVal;
+          if (statusVal === "P") {
+            cell.className = "val-p";
+            presentDays++;
+            workingDays++;
+          } else if (statusVal === "A") {
+            cell.className = "val-a";
+            absentDays++;
+            workingDays++;
+          } else {
+            cell.className = "val-h";
+          }
+        }
+
+        // Highlight Today if filter is active
+        if (parseInt(day) === todayDay && isTodayFilterActive) {
+          row.classList.add('today-row');
+          const dayCell = row.cells[0];
+          dayCell.innerHTML = dayCell.textContent + '<span class="today-tag" style="font-size: 0.62rem; background: var(--primary); color: #fff; padding: 1px 5px; border-radius: 4px; margin-left: 0.5rem; text-transform: uppercase; font-weight: 800;">Today</span>';
+        }
+      }
+
+      // Populate weekly stats board
+      document.getElementById('weekTotalWorking').textContent = `${workingDays} Days`;
+      document.getElementById('weekPresent').textContent = `${presentDays} Days`;
+      document.getElementById('weekAbsent').textContent = `${absentDays} Days`;
+      
+      const weekPercent = workingDays > 0 ? (presentDays / workingDays) * 100 : 0;
+      const weekPercentElement = document.getElementById('weekPercentage');
+      weekPercentElement.textContent = `${weekPercent.toFixed(2)}%`;
+      if (weekPercent >= 75) {
+        weekPercentElement.style.color = "var(--success)";
+      } else {
+        weekPercentElement.style.color = "var(--secondary)";
+      }
+
+      // Populate overall stats panel
+      document.getElementById('overallConducted').textContent = activeStudent.conducted;
+      document.getElementById('overallAttended').textContent = activeStudent.attended;
+      
+      const absents = activeStudent.conducted - activeStudent.attended;
+      document.getElementById('overallAbsent').textContent = absents;
+      
+      const overallPercent = (activeStudent.attended / activeStudent.conducted) * 100;
+      const overallPercentElement = document.getElementById('overallPercent');
+      overallPercentElement.textContent = `${overallPercent.toFixed(2)}%`;
+      if (overallPercent >= 75) {
+        overallPercentElement.style.color = "var(--success)";
+      } else {
+        overallPercentElement.style.color = "var(--danger)";
+      }
+    }
+
+    // Target Calculator Decrement / Increment controls
+    function adjustTarget(amount) {
+      currentTarget = Math.min(100, Math.max(1, currentTarget + amount));
+      document.getElementById('targetVal').textContent = currentTarget;
+      recalculateAttendanceTargets();
+    }
+
+    // Classes/day adjuster - capped strictly at 7 classes max
+    function adjustClassesPerDay(amount) {
+      currentClassesPerDay = Math.min(7, Math.max(1, currentClassesPerDay + amount));
+      document.getElementById('classesPerDayVal').textContent = currentClassesPerDay;
+      recalculateAttendanceTargets();
+    }
+
+    // Projection mathematics
+    function recalculateAttendanceTargets() {
+      const C = activeStudent.conducted;
+      const A = activeStudent.attended;
+      const T = currentTarget / 100;
+      const currentPercent = A / C;
+      const msgBox = document.getElementById('calcOutputMsg');
+
+      if (currentPercent < T) {
+        // Below Target percentage: Formula: (A + x)/(C + x) >= T => x = (T*C - A)/(1 - T)
+        const classesNeeded = Math.ceil((T * C - A) / (1 - T));
+        const daysNeeded = (classesNeeded / currentClassesPerDay).toFixed(1);
+        
+        msgBox.className = "calc-footer-msg";
+        msgBox.innerHTML = `You need to attend ${classesNeeded} classes (~${daysNeeded} days).`;
+      } else {
+        // Above Target (Safe zone): Formula: A/(C + y) >= T => y = (A - T*C)/T
+        const classesCanMiss = Math.floor((A - T * C) / T);
+        
+        msgBox.className = "calc-footer-msg safe";
+        if (classesCanMiss > 0) {
+          msgBox.innerHTML = `Attendance target achieved! You can safely miss the next ${classesCanMiss} classes.`;
+        } else {
+          msgBox.innerHTML = `Attendance target achieved! You have no classes to spare. Keep attending!`;
+        }
+      }
+    }
+
+    // Toggle Today row highlighting
+    function toggleTodayFilter() {
+      isTodayFilterActive = !isTodayFilterActive;
+      const btn = document.getElementById('todaySwitch');
+      
+      if (isTodayFilterActive) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+      populateWeeklyTable();
+    }
+
+    // Set filter mode week vs overall
+    function setFilterMode(mode) {
+      if (currentFilterMode === mode) return;
+      currentFilterMode = mode;
+
+      const btnWeek = document.getElementById('filterWeekBtn');
+      const btnOverall = document.getElementById('filterOverallBtn');
+      const weekPanel = document.getElementById('weekViewPanel');
+      const overallPanel = document.getElementById('overallViewPanel');
+
+      if (mode === 'week') {
+        btnWeek.classList.add('active');
+        btnOverall.classList.remove('active');
+        
+        overallPanel.classList.remove('active');
+        setTimeout(() => {
+          overallPanel.style.display = 'none';
+          weekPanel.style.display = 'block';
+        }, 100);
+      } else {
+        btnWeek.classList.remove('active');
+        btnOverall.classList.add('active');
+        
+        weekPanel.style.display = 'none';
+        overallPanel.style.display = 'flex';
+        // Force reflow
+        overallPanel.offsetHeight;
+        overallPanel.classList.add('active');
+      }
+    }
+
+    // Light Mode vs Dark Mode Theme Toggle
+    function toggleThemeMode() {
+      const body = document.body;
+      const themeBtn = document.getElementById('themeToggleBtn');
+
+      body.classList.toggle('dark-theme');
+
+      if (body.classList.contains('dark-theme')) {
+        themeBtn.textContent = '🌙';
+      } else {
+        themeBtn.textContent = '☀️';
+      }
+    }
+
+    // Sign out logic
+    function handleLogOut() {
+      const loginPageWrapper = document.getElementById('loginPageWrapper');
+      const loginCard = document.getElementById('loginCard');
+      const dashboardPanel = document.getElementById('dashboardPanel');
+
+      dashboardPanel.classList.remove('active');
+      
+      setTimeout(() => {
+        dashboardPanel.style.display = 'none';
+        loginPageWrapper.style.display = 'flex';
+        
+        document.getElementById('userIdentifier').value = '';
+        document.getElementById('password').value = '';
+        activeStudent = null;
+        
+        loginCard.offsetHeight;
+        loginCard.style.opacity = '1';
+        loginCard.style.transform = 'scale(1)';
+      }, 500);
+    }
+
+    function handleForgotPassword() {
+      const portalType = currentMode.charAt(0).toUpperCase() + currentMode.slice(1);
+      alert(`Academic Portal notification:\n\nPlease contact your respective branch department administrator or CIST IT Helpdesk to reset your ${portalType} account credentials.`);
+    }
+  </script>
+</body>
+</html>
