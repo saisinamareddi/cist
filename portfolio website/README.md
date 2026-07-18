@@ -90,7 +90,7 @@ Use the following student credentials in the Portal login screen to preview the 
 
 | Student Roll Number | Password | Student Name | Branch Department |
 | :--- | :--- | :--- | :--- |
-| **`23S05A5403`** | `23S05A5403` | Sinamareddi Sai | Computer Science & Engineering |
+| **`24S05A5403`** | `24S05A5403` | Sinamareddi Sai | Computer Science & Engineering |
 | **`22CSE101`** | `password` | Rahul Kumar | Computer Science & Engineering |
 | **`22ECE102`** | `password` | Priya Sharma | Electronics & Communication Eng. |
 | **`22ME103`** | `password` | Arjun Reddy | Mechanical Engineering |

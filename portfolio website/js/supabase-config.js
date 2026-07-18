@@ -42,6 +42,36 @@ export const supabaseClient = {
     }
   },
 
+  async authenticateFaculty(employeeId, password) {
+    if (!supabaseConfig.useLiveSupabase) {
+      const { facultyDb } = await import('./db.js');
+      const faculty = facultyDb[employeeId];
+      if (faculty && faculty.password === password) {
+        return { data: faculty, error: null };
+      }
+      return { data: null, error: new Error("Unauthorized credentials") };
+    } else {
+      try {
+        const response = await fetch(`${supabaseConfig.url}/rest/v1/faculty?employee_id=eq.${employeeId}&password=eq.${password}`, {
+          method: 'GET',
+          headers: {
+            'apikey': supabaseConfig.anonKey,
+            'Authorization': `Bearer ${supabaseConfig.anonKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (!response.ok) throw new Error("Database request failed");
+        const faculty = await response.json();
+        if (faculty.length > 0) {
+          return { data: faculty[0], error: null };
+        }
+        return { data: null, error: new Error("Invalid credentials") };
+      } catch (err) {
+        return { data: null, error: err };
+      }
+    }
+  },
+
   async updateAttendance(rollNumber, attendedCount, conductedCount) {
     if (!supabaseConfig.useLiveSupabase) {
       // In mock mode, update local student state

@@ -1,13 +1,13 @@
 // CIST Portal Student Database & Mock Records
 
 export const studentDb = {
-  "23S05A5403": {
-    roll: "23S05A5403",
-    password: "23S05A5403",
+  "24S05A5403": {
+    roll: "24S05A5403",
+    password: "24S05A5403",
     name: "Sinamareddi Sai",
     branch: "Computer Science & Engineering",
-    semester: "4th Sem (II Year - II Sem)",
-    academicYear: "2025-2026",
+    semester: "7th Sem (IV Year - I Sem)",
+    academicYear: "2026-2027",
     avatar: "SS",
     conducted: 120,
     attended: 82,
@@ -164,5 +164,44 @@ export const noticeDb = [
   }
 ];
 
+export const facultyDb = {
+  "CSEHOD1": {
+    roll: "CSEHOD1",
+    password: "CSEHOD1",
+    name: "Sridevi",
+    branch: "Computer Science & Engineering",
+    semester: "Professor & HOD",
+    academicYear: "CSE Block, Room 302",
+    avatar: "KR",
+    role: "faculty",
+    conducted: 120,
+    attended: 115,
+    weekly: {
+      1: "P",
+      2: "P",
+      3: "P",
+      4: "P",
+      5: "P",
+      6: "P",
+      0: "H"
+    },
+    monthlyAttendance: [
+      { month: "Jan", conducted: 20, attended: 20 },
+      { month: "Feb", conducted: 22, attended: 22 },
+      { month: "Mar", conducted: 25, attended: 24 },
+      { month: "Apr", conducted: 18, attended: 17 },
+      { month: "May", conducted: 20, attended: 18 },
+      { month: "Jun", conducted: 15, attended: 14 }
+    ],
+    recentActivity: [
+      { type: "attendance", title: "Web Technologies (L) Lecture", status: "Delivered", time: "Today, 10:45 AM" },
+      { type: "attendance", title: "Compiler Design (T) Tutorial", status: "Delivered", time: "Yesterday, 02:15 PM" },
+      { type: "notice", title: "Mid-Term Exam Schedule Drafted", status: "Submitted", time: "14 July, 04:00 PM" },
+      { type: "attendance", title: "Database Management Lab (P)", status: "Delivered", time: "14 July, 09:15 AM" }
+    ]
+  }
+};
+
 window.studentDb = studentDb;
+window.facultyDb = facultyDb;
 window.noticeDb = noticeDb;

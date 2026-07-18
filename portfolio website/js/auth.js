@@ -1,5 +1,5 @@
 // CIST Portal - Authentication & Session Manager
-import { studentDb } from './db.js';
+import { supabaseClient } from './supabase-config.js';
 
 let currentMode = 'student';
 let activeStudent = null;
@@ -85,19 +85,36 @@ export async function handleLoginSubmit(event) {
   await new Promise(resolve => setTimeout(resolve, 1200));
 
   if (currentMode === 'faculty') {
-    errorAlertText.textContent = "Faculty ERP access is restricted under development database rules.";
-    errorAlert.style.display = 'flex';
+    const { data: faculty, error } = await supabaseClient.authenticateFaculty(identifier, password);
     
-    // Reset login button
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalBtnContent;
-    window.Toast.error("Faculty portal is under development database rules.", "Access Denied");
+    if (faculty && !error) {
+      activeStudent = faculty;
+      window.activeStudent = faculty;
+      
+      // Show toast
+      window.Toast.success(`Welcome back, ${faculty.name}!`, "Login Successful");
+      
+      // Reset login button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnContent;
+
+      // Load portal details
+      window.loadRedesignedPortal(activeStudent);
+    } else {
+      errorAlertText.textContent = "Invalid faculty Employee ID or password credentials.";
+      errorAlert.style.display = 'flex';
+      
+      // Reset login button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnContent;
+      window.Toast.error("Authentication failed. Please verify your credentials.", "Error");
+    }
     return;
   }
 
-  const student = studentDb[identifier];
+  const { data: student, error } = await supabaseClient.authenticateStudent(identifier, password);
   
-  if (student && student.password === password) {
+  if (student && !error) {
     activeStudent = student;
     window.activeStudent = student;
     
