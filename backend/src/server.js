@@ -7,13 +7,20 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 
+const path = require('path');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
+// Serve frontend static build files
+app.use(express.static(path.join(__dirname, '../../dist')));
+
 app.get('/', (req, res) => {
+  // If static index.html was served, this won't be reached.
+  // Otherwise, it serves as a API health fallback.
   res.json({ success: true, message: 'CIST attendance backend is running' });
 });
 
