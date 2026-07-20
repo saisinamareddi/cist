@@ -49,11 +49,11 @@ It is divided into two primary sections:
 CIST/
 │
 ├── README.md                          # Main project documentation (this file)
-└── portfolio website/                 # Project source directory
+├── backend/                           # Node.js/Express Backend API & DB integration
+└── frontend/                          # Vite Frontend site source directory
     ├── index.html                     # Main college landing page
     ├── login.html                     # Student attendance portal & dashboard
     ├── project.mobirise               # Mobirise AI designer workspace file
-    ├── readme.txt                     # Mobirise project initialization guide
     │
     ├── clg/                           # Custom college assets
     │   └── logo.png                   # CIST official crest / logo
@@ -72,7 +72,7 @@ CIST/
 ### Running the Project Locally
 No complex installation or backend server configuration is required for static preview. You can run it instantly:
 1. Clone or download this project repository folder to your local system.
-2. Navigate to the `portfolio website` directory.
+2. Navigate to the `frontend` directory.
 3. Open `index.html` in any modern web browser (Chrome, Firefox, Edge, Safari).
 4. Click **"Student Portal"** or navigate directly to `login.html` to access the interactive dashboard.
 
@@ -80,7 +80,7 @@ No complex installation or backend server configuration is required for static p
 The landing page and styling tags are integrated with **Mobirise AI Website Builder**:
 1. Download and install Mobirise App (v5.9.0 or later) from [Mobirise History](https://mobirise.com/history.html).
 2. Open the Mobirise App, navigate to **Sites**, and click **Import Mobirise Site**.
-3. Choose the `project.mobirise` file located in the `portfolio website/` folder to load and edit the design.
+3. Choose the `project.mobirise` file located in the `frontend/` folder to load and edit the design.
 
 ---
 
