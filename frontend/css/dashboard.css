@@ -1734,20 +1734,34 @@ body {
    RESPONSIVENESS MEDIA QUERIES
    ========================================================================== */
 
-/* Tablet & Smaller Layout updates */
-@media (max-width: 991px) {
+/* 1. Small Laptop Layout (769px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
   :root {
-    --sidebar-width: 0px; /* Hide sidebar off-screen */
+    --sidebar-width: 220px; /* Narrower sidebar to fit smaller laptops */
   }
+  .sidebar-brand {
+    padding: 1.25rem 1rem;
+    gap: 8px;
+  }
+  .sidebar-title {
+    font-size: 1rem;
+  }
+  .menu-item {
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+  }
+}
 
+/* 2. Tablet Layout (577px - 768px) and Smaller */
+@media (max-width: 991px) {
   .portal-sidebar {
+    width: 280px !important;
     transform: translateX(-100%);
     box-shadow: 20px 0 40px rgba(0, 0, 0, 0.15);
   }
 
   .portal-sidebar.drawer-open {
     transform: translateX(0);
-    width: 280px;
   }
 
   .portal-main {
@@ -1761,9 +1775,7 @@ body {
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
-}
 
-@media (max-width: 768px) {
   .portal-header {
     padding: 0 1.25rem;
   }
@@ -1772,8 +1784,12 @@ body {
     padding: 1.25rem;
   }
 
+  .header-date {
+    display: none; /* Hide date to prevent overlap */
+  }
+
   .metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns fit nicely on tablet width */
     gap: 1rem;
   }
 
@@ -1809,6 +1825,7 @@ body {
   }
 }
 
+/* 3. Mobile Layout (320px - 576px) */
 @media (max-width: 575px) {
   .page-wrapper {
     padding: 1.5rem 1rem;
@@ -1822,8 +1839,13 @@ body {
   .header-right {
     gap: 10px;
   }
-  
-  .header-date {
-    display: none;
+
+  .header-profile-name {
+    display: none; /* Hide student name to prevent overlap on small mobile screens */
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr; /* Stack metrics on mobile */
+    gap: 1rem;
   }
 }
