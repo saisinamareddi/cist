@@ -1,6 +1,6 @@
 {
   "name": "cist-portal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CHAITANYA Institute of Science and Technology Portal",
   "scripts": {
     "dev": "vite",
