@@ -3,9 +3,10 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const connectDB = require('./config/db');
-const authRoutes = require('./routes/authRoutes');
-const studentRoutes = require('./routes/studentRoutes');
+const connectDB = require('./src/config/db');
+const authRoutes = require('./src/routes/authRoutes');
+const studentRoutes = require('./src/routes/studentRoutes');
+const attendanceRoutes = require('./src/routes/attendanceRoutes');
 
 const path = require('path');
 
@@ -34,6 +35,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });

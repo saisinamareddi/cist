@@ -1,5 +1,6 @@
 // CIST ERP Dashboard Controller
-import { noticeDb } from './db.js';
+import { noticeDb, studentDb } from './db.js';
+import { submitFacultyAttendance, fetchStudentAttendanceRecords } from './attendanceService.js';
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 
   ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -30,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const createEmptyAttendanceState = (student) => ({
   ...student,
   roll: student.roll || student.rollNumber || '',
-  avatar: student.avatar || String(student.name || 'ST').trim().split(/\\s+/).slice(0, 2).map(part => part.charAt(0).toUpperCase()).join('') || 'ST',
+  avatar: student.avatar || String(student.name || 'ST').trim().split(/\s+/).slice(0, 2).map(part => part.charAt(0).toUpperCase()).join('') || 'ST',
   semester: student.semester || 'Not assigned',
   academicYear: student.academicYear || 'Not assigned',
   conducted: Number(student.conducted || 0),
@@ -38,12 +39,73 @@ const createEmptyAttendanceState = (student) => ({
   weekly: student.weekly || { 0: 'H', 1: 'H', 2: 'H', 3: 'H', 4: 'H', 5: 'H', 6: 'H' },
   monthlyAttendance: student.monthlyAttendance || [],
   recentActivity: student.recentActivity || [],
+  attendanceHistory: [],
 });
 
+let headerDateInterval = null;
+
+export function updateHeaderDateTime() {
+  const renderDate = () => {
+    const dateEl = document.getElementById('headerDateTime');
+    if (dateEl) {
+      const now = new Date();
+      const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+      dateEl.textContent = now.toLocaleDateString('en-US', options);
+    }
+  };
+
+  renderDate();
+
+  if (!headerDateInterval) {
+    headerDateInterval = setInterval(renderDate, 60000);
+  }
+}
+
 // Primary dashboard loading entry point
-export function loadRedesignedPortal(student) {
+export async function loadRedesignedPortal(student) {
   activeStudent = createEmptyAttendanceState(student);
   
+  if (activeStudent.role === 'student') {
+    const roll = activeStudent.roll || activeStudent.rollNumber;
+    try {
+      const res = await fetchStudentAttendanceRecords(roll);
+      if (res && res.success && Array.isArray(res.records)) {
+        if (res.conducted > 0) {
+          activeStudent.conducted = res.conducted;
+          activeStudent.attended = res.attended;
+        }
+        activeStudent.attendanceHistory = res.records;
+      }
+    } catch (e) {
+      console.error('Error loading student attendance records:', e);
+    }
+  }
+
+  // Set default subject options and date picker for faculty vs HOD
+  if (activeStudent.role === 'faculty') {
+    const isHod = activeStudent?.isHod || activeStudent?.roll === 'CSEHOD1' || activeStudent?.assignedSubjects?.includes('*');
+    const hodDateGroup = document.getElementById('hodDateGroup');
+    const dateInput = document.getElementById('facultyDateInput');
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    if (hodDateGroup) {
+      if (isHod) {
+        hodDateGroup.style.display = 'block';
+        if (dateInput) {
+          if (!dateInput.value) dateInput.value = todayStr;
+          dateInput.max = todayStr;
+          dateInput.removeAttribute('min');
+        }
+      } else {
+        hodDateGroup.style.display = 'none';
+      }
+    }
+    handleFacultySemesterChange();
+  }
+  
+  // Update header current date readout dynamically
+  updateHeaderDateTime();
+
   // Set student profile detail readouts
   updateStudentProfileDOM();
   
@@ -59,9 +121,12 @@ export function loadRedesignedPortal(student) {
   // Initialize target calculator values
   currentTarget = 75;
   currentClassesPerDay = 7;
-  document.getElementById('targetVal').textContent = currentTarget;
-  document.getElementById('classesPerDayVal').textContent = currentClassesPerDay;
-  document.getElementById('targetRangeSlider').value = currentTarget;
+  const targetValEl = document.getElementById('targetVal');
+  if (targetValEl) targetValEl.textContent = currentTarget;
+  const classesPerDayValEl = document.getElementById('classesPerDayVal');
+  if (classesPerDayValEl) classesPerDayValEl.textContent = currentClassesPerDay;
+  const sliderEl = document.getElementById('targetRangeSlider');
+  if (sliderEl) sliderEl.value = currentTarget;
   recalculateAttendanceProjections();
 
   // Load notices dynamically
@@ -86,7 +151,8 @@ export function loadRedesignedPortal(student) {
 
 // Render student details in the profile card and header
 function updateStudentProfileDOM() {
-  document.getElementById('studentHeaderName').textContent = activeStudent.name;
+  const nameHeader = document.getElementById('studentHeaderName');
+  if (nameHeader) nameHeader.textContent = activeStudent.name;
   
   const avatarElements = document.querySelectorAll('.student-avatar-placeholder');
   avatarElements.forEach(el => {
@@ -97,8 +163,12 @@ function updateStudentProfileDOM() {
   
   // Update Profile Card Labels
   const lblRoll = document.getElementById('lblProfileRoll');
-  
   if (lblRoll) lblRoll.textContent = isFaculty ? "Faculty Employee ID" : "Roll Number";
+
+  const lblAttendance = document.getElementById('lblAttendanceMenuItemText');
+  if (lblAttendance) {
+    lblAttendance.textContent = isFaculty ? "Upload Attendance" : "Attendance List";
+  }
 
   // Update Metrics Card Labels
   const lblConducted = document.getElementById('lblMetricConducted');
@@ -109,9 +179,12 @@ function updateStudentProfileDOM() {
   if (lblAttended) lblAttended.textContent = isFaculty ? "Classes Delivered" : "Attended";
   if (lblMissed) lblMissed.textContent = isFaculty ? "Classes Remaining" : "Missed";
 
-  document.getElementById('profileName').textContent = activeStudent.name;
-  document.getElementById('profileRoll').textContent = activeStudent.roll;
-  document.getElementById('profileBranch').textContent = activeStudent.branch;
+  const profileName = document.getElementById('profileName');
+  if (profileName) profileName.textContent = activeStudent.name;
+  const profileRoll = document.getElementById('profileRoll');
+  if (profileRoll) profileRoll.textContent = activeStudent.roll;
+  const profileBranch = document.getElementById('profileBranch');
+  if (profileBranch) profileBranch.textContent = activeStudent.branch;
 }
 
 // Render Dashboard Tab Overview (Summary Cards, Circle Progress, Monthly Chart, Activities)
@@ -264,96 +337,418 @@ function getDayIndex(dayName) {
   return days.indexOf(dayName.toLowerCase());
 }
 
-export function renderAttendanceTable() {
-  const tbody = document.getElementById('attendanceTableBody');
+export function matchBranch(studentBranch, selectedBranch) {
+  if (!selectedBranch || selectedBranch === 'ALL') return true;
+
+  const sb = String(studentBranch || '').trim().toUpperCase();
+  const sel = String(selectedBranch).trim().toUpperCase();
+
+  if (sel === 'CSE') {
+    return sb.includes('COMPUTER SCIENCE AND ENGINEERING') || sb.includes('COMPUTER SCIENCE ENGINEERING') || sb === 'CSE';
+  }
+  if (sel === 'CST') {
+    return sb.includes('TECHNOLOGY') || sb.includes('CST');
+  }
+  if (sel === 'AI & DS' || sel === 'AIDS') {
+    return sb.includes('ARTIFICIAL') || sb.includes('DATA SCIENCE') || sb.includes('AI');
+  }
+  if (sel === 'CSE-AIML') {
+    return sb.includes('AIML') || sb.includes('MACHINE LEARNING');
+  }
+  if (sel === 'CSE-DS') {
+    return sb.includes('DATA SCIENCE') || sb.includes('DS');
+  }
+  if (sel === 'ECE') {
+    return sb.includes('ELECTRONICS') || sb === 'ECE';
+  }
+  if (sel === 'EEE') {
+    return sb.includes('ELECTRICAL') || sb === 'EEE';
+  }
+  if (sel === 'CIVIL') {
+    return sb.includes('CIVIL');
+  }
+  if (sel === 'MECHANICAL' || sel === 'MECH') {
+    return sb.includes('MECHANICAL') || sb === 'ME';
+  }
+
+  return sb.includes(sel);
+}
+
+export function handleFacultyBranchOrDateChange() {
+  renderFacultyStudentTable();
+}
+
+export function setAllFacultyCheckboxes(checked) {
+  const checkboxes = document.querySelectorAll('.faculty-chk-present');
+  checkboxes.forEach(chk => chk.checked = checked);
+  updateFacultyAttendanceCounts();
+}
+
+const semesterSubjectsMap = {
+  'Sem 1': [
+    { value: 'M1', label: 'M1 (Mathematics-I)' },
+    { value: 'EP', label: 'EP (Engineering Physics)' },
+    { value: 'BEE', label: 'BEE (Basic Electrical Engg)' },
+    { value: 'CP', label: 'CP (C Programming)' },
+  ],
+  'Sem 2': [
+    { value: 'M2', label: 'M2 (Mathematics-II)' },
+    { value: 'EC', label: 'EC (Engineering Chemistry)' },
+    { value: 'DS', label: 'DS (Data Structures)' },
+    { value: 'EG', label: 'EG (Engineering Graphics)' },
+  ],
+  'Sem 3': [
+    { value: 'MFCS', label: 'MFCS (Math Foundations)' },
+    { value: 'OOP', label: 'OOP (Object Oriented Prog)' },
+    { value: 'DE', label: 'DE (Digital Electronics)' },
+    { value: 'DMS', label: 'DMS (Discrete Math)' },
+  ],
+  'Sem 4': [
+    { value: 'DBMS', label: 'DBMS (Database Management)' },
+    { value: 'OS', label: 'OS (Operating Systems)' },
+    { value: 'COA', label: 'COA (Computer Architecture)' },
+    { value: 'P&S', label: 'P&S (Probability & Stats)' },
+  ],
+  'Sem 5': [
+    { value: 'WT', label: 'WT (Web Technologies)' },
+    { value: 'CN', label: 'CN (Computer Networks)' },
+    { value: 'FLAT', label: 'FLAT (Formal Languages)' },
+    { value: 'DAA', label: 'DAA (Design & Analysis of Algo)' },
+  ],
+  'Sem 6': [
+    { value: 'REL', label: 'REL (Renewable Energy & Logistics)' },
+    { value: 'HR&PM', label: 'HR&PM (Human Resources & Project Mgmt)' },
+    { value: 'BCT', label: 'BCT (Blockchain Technology)' },
+    { value: 'BDA', label: 'BDA (Big Data Analytics)' },
+    { value: 'EMI', label: 'EMI (Electromagnetic Induction)' },
+    { value: 'OM', label: 'OM (Operations Management)' },
+    { value: 'CD', label: 'CD (Compiler Design)' },
+    { value: 'SE', label: 'SE (Software Engineering)' },
+  ],
+  'Sem 7': [
+    { value: 'AI', label: 'AI (Artificial Intelligence)' },
+    { value: 'CNS', label: 'CNS (Cryptography & Network Security)' },
+    { value: 'CC', label: 'CC (Cloud Computing)' },
+    { value: 'ML', label: 'ML (Machine Learning)' },
+  ],
+  'Sem 8': [
+    { value: 'DL', label: 'DL (Deep Learning)' },
+    { value: 'IOT', label: 'IOT (Internet of Things)' },
+    { value: 'PROJECT', label: 'PROJECT (Major Project Work)' },
+  ]
+};
+
+const semToYearMap = {
+  'Sem 1': '1',
+  'Sem 2': '1',
+  'Sem 3': '2',
+  'Sem 4': '2',
+  'Sem 5': '3',
+  'Sem 6': '3',
+  'Sem 7': '4',
+  'Sem 8': '4'
+};
+
+const yearToSemMap = {
+  '1': 'Sem 1',
+  '2': 'Sem 3',
+  '3': 'Sem 6',
+  '4': 'Sem 7'
+};
+
+export function handleFacultySemesterChange() {
+  const semVal = document.getElementById('facultySemesterSelect')?.value || 'Sem 6';
+  const yearSelect = document.getElementById('facultyYearSelect');
+  if (yearSelect && semToYearMap[semVal]) {
+    yearSelect.value = semToYearMap[semVal];
+  }
+
+  const subjSelect = document.getElementById('facultySubjectSelect');
+  if (!subjSelect) return;
+
+  const allSemesterSubjects = semesterSubjectsMap[semVal] || semesterSubjectsMap['Sem 6'];
+  subjSelect.innerHTML = '';
+
+  const isHod = activeStudent?.isHod || activeStudent?.roll === 'CSEHOD1' || activeStudent?.assignedSubjects?.includes('*');
+  const assigned = activeStudent?.assignedSubjects || [];
+
+  let allowedSubjects = allSemesterSubjects;
+  if (!isHod && Array.isArray(assigned)) {
+    allowedSubjects = allSemesterSubjects.filter(s => assigned.includes(s.value));
+  }
+
+  if (allowedSubjects.length === 0) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = `-- No Subjects Assigned for ${semVal} --`;
+    subjSelect.appendChild(opt);
+  } else {
+    allowedSubjects.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.value;
+      opt.textContent = s.label;
+      subjSelect.appendChild(opt);
+    });
+  }
+
+  renderFacultyStudentTable();
+}
+
+export function handleFacultyYearChange() {
+  const yearVal = document.getElementById('facultyYearSelect')?.value;
+  const semSelect = document.getElementById('facultySemesterSelect');
+
+  if (yearVal && yearVal !== 'ALL' && yearToSemMap[yearVal]) {
+    if (semSelect) semSelect.value = yearToSemMap[yearVal];
+    handleFacultySemesterChange();
+  } else {
+    renderFacultyStudentTable();
+  }
+}
+
+export function updateFacultyAttendanceCounts() {
+  const checkboxes = document.querySelectorAll('.faculty-chk-present');
+  const total = checkboxes.length;
+  let present = 0;
+  checkboxes.forEach(chk => { if (chk.checked) present++; });
+  const absent = total - present;
+
+  const summary = document.getElementById('facultySummaryStats');
+  if (summary) {
+    summary.textContent = `Total Students: ${total} | Present: ${present} | Absent: ${absent}`;
+  }
+}
+
+export async function submitFacultyAttendanceHandler() {
+  const checkboxes = document.querySelectorAll('.faculty-chk-present');
+  const dateInput = document.getElementById('facultyDateInput');
+  const isHod = activeStudent?.isHod || activeStudent?.roll === 'CSEHOD1' || activeStudent?.assignedSubjects?.includes('*');
+  const todayStr = new Date().toISOString().split('T')[0];
+  let dateVal = todayStr;
+  if (isHod && dateInput && dateInput.value) {
+    dateVal = dateInput.value;
+    if (dateVal > todayStr) {
+      window.Toast.warning("Future dates cannot be modified for attendance.", "Invalid Date");
+      return;
+    }
+  }
+
+  const semesterVal = document.getElementById('facultySemesterSelect')?.value || 'Sem 6';
+  const subjectVal = document.getElementById('facultySubjectSelect')?.value || '';
+
+  if (!subjectVal) {
+    window.Toast.warning("Please select a valid assigned subject to upload attendance.", "Subject Required");
+    return;
+  }
+
+  if (checkboxes.length === 0) {
+    window.Toast.warning("No students selected for attendance.", "Selection Empty");
+    return;
+  }
+
+  const records = Array.from(checkboxes).map(chk => ({
+    date: dateVal,
+    rollNumber: chk.dataset.roll,
+    studentName: chk.dataset.name,
+    branch: chk.dataset.branch,
+    semester: semesterVal,
+    subject: subjectVal,
+    status: chk.checked ? 'P' : 'A'
+  }));
+
+  const btn = document.getElementById('btnSubmitFacultyAttendance');
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await submitFacultyAttendance(records);
+    if (res && res.success) {
+      window.Toast.success(`Attendance for ${semesterVal} - ${subjectVal} on ${dateVal} submitted for ${records.length} students!`, 'Attendance Saved');
+    }
+  } catch (err) {
+    window.Toast.error("Failed to upload attendance records.", "Error");
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+export function renderFacultyStudentTable() {
+  const tbody = document.getElementById('facultyStudentTableBody');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
-  if (!activeStudent.conducted && !activeStudent.attended) {
-    tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #64748b; padding: 2rem;">Attendance list will appear after attendance data is added.</td></tr>';
-    document.getElementById('paginationInfoText').textContent = 'Showing 0 to 0 of 0 records';
-    document.getElementById('btnPrevPage').disabled = true;
-    document.getElementById('btnNextPage').disabled = true;
-    return;
-  }
+  const selectedBranch = document.getElementById('facultyBranchSelect')?.value || 'ALL';
+  const selectedYear = document.getElementById('facultyYearSelect')?.value || 'ALL';
 
-  const baseWeekly = activeStudent.weekly;
-  const daysList = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-  let allLogs = [];
-
-  for (let week = 2; week >= 0; week--) {
-    daysList.forEach((day, index) => {
-      const dayNum = (index + 1) % 7;
-      let status = baseWeekly[dayNum];
-
-      if (week > 0 && status !== 'H') {
-        status = (week + index) % 3 === 0 ? 'A' : 'P';
-      }
-
-      allLogs.push({
-        weekNum: week + 1,
-        dayName: day,
-        dayNum: dayNum,
-        status: status,
-      });
-    });
-  }
-
-  let filteredLogs = allLogs.filter(log => {
-    return log.dayName.toLowerCase().includes(searchQuery.toLowerCase());
+  // Deduplicate students by unique roll number
+  const uniqueStudentsMap = new Map();
+  Object.values(studentDb).forEach(student => {
+    const cleanRoll = String(student.roll || student.rollNumber || '').trim().toUpperCase();
+    if (cleanRoll && !uniqueStudentsMap.has(cleanRoll)) {
+      uniqueStudentsMap.set(cleanRoll, student);
+    }
   });
 
-  if (currentFilter !== 'all') {
-    filteredLogs = filteredLogs.filter(log => {
-      return log.status.toLowerCase() === currentFilter.toLowerCase();
-    });
-  }
+  const studentsArray = Array.from(uniqueStudentsMap.values());
+  const filteredStudents = studentsArray.filter(student => {
+    const branchMatch = matchBranch(student.branch, selectedBranch);
+    let yearMatch = true;
+    if (selectedYear !== 'ALL') {
+      const studentYear = Number(student.year || 4);
+      yearMatch = studentYear === Number(selectedYear);
+    }
+    return branchMatch && yearMatch;
+  });
 
-  const totalItems = filteredLogs.length;
-  const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
-
-  if (currentPage > totalPages) currentPage = totalPages;
-  if (currentPage < 1) currentPage = 1;
-
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = Math.min(startIndex + rowsPerPage, totalItems);
-  const paginatedLogs = filteredLogs.slice(startIndex, endIndex);
-
-  document.getElementById('paginationInfoText').textContent = `Showing ${totalItems > 0 ? startIndex + 1 : 0} to ${endIndex} of ${totalItems} records`;
-  document.getElementById('btnPrevPage').disabled = currentPage === 1;
-  document.getElementById('btnNextPage').disabled = currentPage === totalPages;
-
-  if (paginatedLogs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #64748b; padding: 2rem;">No matching records found.</td></tr>';
+  if (filteredStudents.length === 0) {
+    const yrLabel = selectedYear !== 'ALL' ? `${selectedYear}${selectedYear === '1' ? 'st' : selectedYear === '2' ? 'nd' : selectedYear === '3' ? 'rd' : 'th'} Year` : '';
+    const msg = yrLabel ? `No student records available for ${yrLabel} currently.` : `No students found matching selected filters.`;
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 2rem; font-weight: 600;">${msg}</td></tr>`;
+    updateFacultyAttendanceCounts();
     return;
   }
 
-  const todayDayNum = new Date().getDay();
-
-  paginatedLogs.forEach(log => {
+  filteredStudents.forEach(student => {
     const row = document.createElement('tr');
-    const isToday = log.dayNum === todayDayNum && log.weekNum === 1;
-    if (isToday) row.className = 'today-row';
-
-    let statusClass = 'h';
-    let statusText = 'Holiday';
-    if (log.status === 'P') {
-      statusClass = 'p';
-      statusText = 'Present';
-    } else if (log.status === 'A') {
-      statusClass = 'a';
-      statusText = 'Absent';
-    }
-
+    const yr = student.year || 4;
+    const sec = student.section || 'A';
     row.innerHTML = `
-      <td>${log.dayName} ${log.weekNum > 1 ? `<span style="font-size:0.7rem; color: #94a3b8;">(Week -${log.weekNum - 1})</span>` : ''}</td>
-      <td>
-        <span class="status-badge ${statusClass}">${statusText}</span>
-        ${isToday ? '<span class="news-tag" style="background: var(--primary); font-size: 0.55rem; padding: 1px 4px; vertical-align: middle;">Today</span>' : ''}
+      <td style="text-align: center;">
+        <input type="checkbox" class="faculty-chk-present" data-roll="${student.roll}" data-name="${student.name}" data-branch="${student.branch}" onchange="updateFacultyAttendanceCounts()">
       </td>
+      <td style="font-weight: 750;">${student.roll} <span style="font-size:0.7rem; color:#94a3b8; font-weight:600;">(Yr ${yr}-${sec})</span></td>
+      <td>${student.name}</td>
+      <td><span class="news-tag" style="background: var(--light-gray); color: var(--dark); font-size: 0.72rem; padding: 2px 8px;">${student.branch}</span></td>
     `;
     tbody.appendChild(row);
   });
+
+  updateFacultyAttendanceCounts();
+}
+
+let currentSubjectTimeFilter = 'today';
+
+export function setSubjectTimeFilter(filter) {
+  currentSubjectTimeFilter = filter;
+  ['today', 'overall', 'yesterday'].forEach(f => {
+    const btn = document.getElementById(`subpill-${f}`);
+    if (btn) {
+      if (f === filter) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+  });
+  renderStudentAttendanceLogs();
+}
+
+function renderStudentAttendanceLogs() {
+  const container = document.getElementById('studentSubjectAttendanceList');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const allRecords = activeStudent?.attendanceHistory || [];
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+
+  let filteredRecords = allRecords;
+  if (currentSubjectTimeFilter === 'today') {
+    filteredRecords = allRecords.filter(r => r.date === todayStr);
+  } else if (currentSubjectTimeFilter === 'yesterday') {
+    filteredRecords = allRecords.filter(r => r.date === yesterdayStr);
+  }
+
+  // Pre-defined subjects list matching reference image
+  const defaultSubjects = ['REL', 'HR&PM', 'BCT', 'BDA', 'EMI', 'OM'];
+
+  // Map of subject statistics
+  const subjectMap = new Map();
+  defaultSubjects.forEach(s => {
+    subjectMap.set(s, { subject: s, conducted: 0, attended: 0 });
+  });
+
+  filteredRecords.forEach(r => {
+    const subjName = r.subject || 'General';
+    if (!subjectMap.has(subjName)) {
+      subjectMap.set(subjName, { subject: subjName, conducted: 0, attended: 0 });
+    }
+    const item = subjectMap.get(subjName);
+    item.conducted += 1;
+    if (r.status === 'P' || r.status === 'Present') {
+      item.attended += 1;
+    }
+  });
+
+  const subjectsList = Array.from(subjectMap.values());
+
+  subjectsList.forEach(item => {
+    const conducted = item.conducted;
+    const attended = item.attended;
+    
+    let conductedDisplay = conducted;
+    let attendedDisplay = attended;
+    if (conducted === 0) {
+      conductedDisplay = 1;
+      attendedDisplay = 0;
+    }
+
+    const percentage = conductedDisplay > 0 ? Math.round((attendedDisplay / conductedDisplay) * 100) : 0;
+    const isSuccess = percentage > 0;
+
+    const card = document.createElement('div');
+    card.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.1rem 1.25rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      transition: var(--transition);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    `;
+
+    card.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-family: 'Outfit', sans-serif; font-weight: 850; font-size: 1.05rem; color: var(--dark); letter-spacing: 0.5px;">${item.subject}</span>
+        <span style="font-size: 0.82rem; font-weight: 600; color: #64748b;">${attendedDisplay}/${conductedDisplay}</span>
+      </div>
+      <div style="
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid ${isSuccess ? '#3b82f6' : '#cbd5e1'};
+        color: ${isSuccess ? '#2563eb' : '#ef4444'};
+        font-family: 'Outfit', sans-serif;
+        font-weight: 850;
+        font-size: 0.95rem;
+        background: ${isSuccess ? 'rgba(59, 130, 246, 0.05)' : 'rgba(241, 245, 249, 0.5)'};
+      ">
+        ${percentage}
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+export function renderAttendanceTable() {
+  const isFaculty = activeStudent?.role === 'faculty';
+  const facultyView = document.getElementById('facultyAttendanceView');
+  const studentView = document.getElementById('studentAttendanceView');
+
+  if (isFaculty) {
+    if (facultyView) facultyView.style.display = 'block';
+    if (studentView) studentView.style.display = 'none';
+    renderFacultyStudentTable();
+  } else {
+    if (facultyView) facultyView.style.display = 'none';
+    if (studentView) studentView.style.display = 'block';
+    renderStudentAttendanceLogs();
+  }
 }
 // Live search listener
 export function handleSearch(event) {
@@ -398,62 +793,57 @@ export function prevPage() {
 
 export function adjustTargetValue(amount) {
   currentTarget = Math.min(100, Math.max(1, currentTarget + amount));
-  document.getElementById('targetVal').textContent = currentTarget;
-  document.getElementById('targetRangeSlider').value = currentTarget;
+  const el = document.getElementById('targetVal');
+  if (el) el.textContent = currentTarget;
   recalculateAttendanceProjections();
 }
 
 export function adjustClassesPerDayValue(amount) {
-  currentClassesPerDay = Math.min(7, Math.max(1, currentClassesPerDay + amount));
-  document.getElementById('classesPerDayVal').textContent = currentClassesPerDay;
+  currentClassesPerDay = Math.min(12, Math.max(1, currentClassesPerDay + amount));
+  const el = document.getElementById('classesPerDayVal');
+  if (el) el.textContent = currentClassesPerDay;
   recalculateAttendanceProjections();
 }
 
 export function handleSliderChange(val) {
   currentTarget = parseInt(val);
-  document.getElementById('targetVal').textContent = currentTarget;
+  const el = document.getElementById('targetVal');
+  if (el) el.textContent = currentTarget;
   recalculateAttendanceProjections();
 }
 
 // Core calculator prediction logic
 function recalculateAttendanceProjections() {
-  const C = Number(activeStudent.conducted || 0);
-  const A = Number(activeStudent.attended || 0);
-  const T = currentTarget / 100;
-  const currentPercent = C > 0 ? A / C : 0;
+  const resultMsg = document.getElementById('targetCalcResultMsg');
+  if (!resultMsg) return;
 
-  const resultCard = document.getElementById('calcResultCard');
-  const resultIcon = document.getElementById('calcResultIcon');
-  const resultStatus = document.getElementById('calcResultStatus');
-  const resultText = document.getElementById('calcResultText');
+  const C = Number(activeStudent?.conducted || 0);
+  const A = Number(activeStudent?.attended || 0);
+  const T = currentTarget / 100;
 
   if (C === 0) {
-    resultCard.className = 'calc-result-card warning-zone';
-    resultIcon.innerHTML = '';
-    resultStatus.textContent = 'Attendance Pending';
-    resultText.textContent = 'Attendance projections will be available after attendance data is added.';
+    resultMsg.className = 'target-calc-result';
+    resultMsg.textContent = 'Attendance projections will be available after attendance records are uploaded.';
     return;
   }
+
+  const currentPercent = A / C;
 
   if (currentPercent < T) {
     const classesNeeded = Math.ceil((T * C - A) / (1 - T));
     const daysNeeded = (classesNeeded / currentClassesPerDay).toFixed(1);
 
-    resultCard.className = 'calc-result-card warning-zone';
-    resultIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
-    resultStatus.textContent = 'Warning Zone';
-    resultText.innerHTML = `You are currently below your target threshold. You need to attend the next <strong>${classesNeeded}</strong> consecutive classes (~${daysNeeded} days) to reach <strong>${currentTarget}%</strong>.`;
+    resultMsg.className = 'target-calc-result';
+    resultMsg.innerHTML = `You need to attend ${classesNeeded} classes (~${daysNeeded} days).`;
   } else {
     const classesCanMiss = Math.floor((A - T * C) / T);
+    const daysCanMiss = (classesCanMiss / currentClassesPerDay).toFixed(1);
 
-    resultCard.className = 'calc-result-card safe-zone';
-    resultIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
-    resultStatus.textContent = 'Safe Zone';
-
+    resultMsg.className = 'target-calc-result safe';
     if (classesCanMiss > 0) {
-      resultText.innerHTML = `Attendance target achieved! You can safely miss the next <strong>${classesCanMiss}</strong> classes without falling below <strong>${currentTarget}%</strong>.`;
+      resultMsg.innerHTML = `Target achieved! You can safely miss ${classesCanMiss} classes (~${daysCanMiss} days).`;
     } else {
-      resultText.innerHTML = `Attendance target achieved! Keep attending to stay above <strong>${currentTarget}%</strong>.`;
+      resultMsg.innerHTML = `Target achieved! Keep attending classes to maintain ${currentTarget}%.`;
     }
   }
 }
@@ -553,9 +943,12 @@ export function switchSection(sectionId) {
   // Display page title
   const titleDisplay = document.getElementById('headerPageTitle');
   if (titleDisplay) {
-    // Format name (e.g. target_calculator -> Target Calculator)
-    const formattedName = sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace('_', ' ');
-    titleDisplay.textContent = formattedName;
+    if (sectionId === 'attendance') {
+      titleDisplay.textContent = activeStudent?.role === 'faculty' ? 'Upload Attendance' : 'Attendance List';
+    } else {
+      const formattedName = sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace('_', ' ');
+      titleDisplay.textContent = formattedName;
+    }
   }
 
   const sections = document.querySelectorAll('.portal-section');
@@ -635,6 +1028,13 @@ window.downloadReport = downloadReport;
 window.raiseQuery = raiseQuery;
 window.focusCalculator = focusCalculator;
 window.handleChangePasswordSubmit = handleChangePasswordSubmit;
+window.handleFacultyBranchOrDateChange = handleFacultyBranchOrDateChange;
+window.setAllFacultyCheckboxes = setAllFacultyCheckboxes;
+window.updateFacultyAttendanceCounts = updateFacultyAttendanceCounts;
+window.submitFacultyAttendanceHandler = submitFacultyAttendanceHandler;
+window.setSubjectTimeFilter = setSubjectTimeFilter;
+window.handleFacultySemesterChange = handleFacultySemesterChange;
+window.handleFacultyYearChange = handleFacultyYearChange;
 
 
 

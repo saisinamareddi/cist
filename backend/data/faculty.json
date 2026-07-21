@@ -1,0 +1,34 @@
+[
+  {
+    "employeeId": "CSEHOD1",
+    "password": "CSEHOD1",
+    "name": "Prof. Sridevi (HOD-CSE)",
+    "branch": "Computer Science & Engineering",
+    "isHod": true,
+    "assignedSubjects": ["*"]
+  },
+  {
+    "employeeId": "FAC001",
+    "password": "faculty@123",
+    "name": "Dr. K. Srinivas",
+    "branch": "Computer Science & Engineering",
+    "isHod": false,
+    "assignedSubjects": ["REL", "M1", "WT", "AI", "DBMS", "DL"]
+  },
+  {
+    "employeeId": "FAC002",
+    "password": "faculty@123",
+    "name": "Prof. M. Anita",
+    "branch": "Computer Science & Technology",
+    "isHod": false,
+    "assignedSubjects": ["HR&PM", "EP", "CN", "ML", "OS", "IOT"]
+  },
+  {
+    "employeeId": "FAC003",
+    "password": "faculty@123",
+    "name": "Dr. P. Rajesh",
+    "branch": "Artificial Intelligence & Data Science",
+    "isHod": false,
+    "assignedSubjects": ["BCT", "BDA", "EMI", "OM", "CD", "SE", "PROJECT"]
+  }
+]

@@ -75,23 +75,84 @@ const getInitials = (name) => {
 };
 
 const loginStudent = async (rollNumber, password) => {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ rollNumber, password }),
-  });
+  const cleanRoll = String(rollNumber || '').trim().toUpperCase();
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rollNumber: cleanRoll, password }),
+    });
 
-  const result = await response.json().catch(() => ({}));
+    const result = await response.json().catch(() => ({}));
 
-  if (!response.ok || !result.success) {
-    throw new Error(result.message || 'Invalid student Roll Number or password credentials.');
+    if (response.ok && result.success && result.student) {
+      return {
+        ...result.student,
+        roll: result.student.rollNumber,
+        avatar: getInitials(result.student.name),
+        role: 'student',
+      };
+    } else if (response.ok === false && result.message) {
+      throw new Error(result.message);
+    }
+  } catch (err) {
+    if (err.message && err.message !== 'Failed to fetch' && !err.message.includes('fetch')) {
+      throw err;
+    }
+    // Fallback to client-side auth if backend API is unreachable
+  }
+
+  const { supabaseClient } = await import('./supabase-config.js');
+  const { data: student, error } = await supabaseClient.authenticateStudent(cleanRoll, password);
+
+  if (error || !student) {
+    throw new Error(error?.message || 'Invalid student Roll Number or password credentials.');
   }
 
   return {
-    ...result.student,
-    roll: result.student.rollNumber,
-    avatar: getInitials(result.student.name),
+    ...student,
+    roll: student.roll || student.rollNumber || cleanRoll,
+    avatar: student.avatar || getInitials(student.name),
     role: 'student',
+  };
+};
+
+const loginFaculty = async (employeeId, password) => {
+  const cleanId = employeeId.trim().toUpperCase();
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/faculty-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employeeId: cleanId, password }),
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (response.ok && result.success && result.faculty) {
+      return {
+        ...result.faculty,
+        roll: result.faculty.employeeId || result.faculty.roll || cleanId,
+        avatar: result.faculty.avatar || getInitials(result.faculty.name),
+        role: 'faculty',
+      };
+    }
+  } catch (err) {
+    // API endpoint unreachable, fallback to client-side auth
+  }
+
+  const { supabaseClient } = await import('./supabase-config.js');
+  const { data: faculty, error } = await supabaseClient.authenticateFaculty(cleanId, password);
+
+  if (error || !faculty) {
+    throw new Error(error?.message || 'Invalid Faculty Employee ID or password.');
+  }
+
+  return {
+    ...faculty,
+    roll: faculty.roll || faculty.employeeId || cleanId,
+    avatar: faculty.avatar || getInitials(faculty.name),
+    role: 'faculty',
   };
 };
 
@@ -116,10 +177,10 @@ export async function handleLoginSubmit(event) {
 
   try {
     if (currentMode === 'faculty') {
-      throw new Error('Faculty login is not connected yet. Please use Student Login.');
+      activeStudent = await loginFaculty(identifier, password);
+    } else {
+      activeStudent = await loginStudent(identifier, password);
     }
-
-    activeStudent = await loginStudent(identifier, password);
     window.activeStudent = activeStudent;
 
     window.Toast.success(`Welcome back, ${activeStudent.name}!`, 'Login Successful');

@@ -142,10 +142,10 @@
           Dashboard
         </a>
         
-        <!-- Attendance link -->
+        <!-- Attendance / Upload link -->
         <a class="menu-item" onclick="switchSection('attendance'); document.getElementById('portalSidebar').classList.remove('drawer-open')">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-          Attendance List
+          <span id="lblAttendanceMenuItemText">Attendance List</span>
         </a>
         
         <!-- Target Calculator link -->
@@ -387,114 +387,182 @@
         </section>
 
         <!-- ==========================================================================
-             SECTION 2: ATTENDANCE LIST PAGE
+             SECTION 2: ATTENDANCE / UPLOAD ATTENDANCE PAGE
              ========================================================================== -->
         <section class="portal-section" id="attendanceSection">
-          <div class="erp-card" style="margin-bottom: 2rem;">
-            
-            <!-- Controls, filter pills, search input -->
-            <div class="attendance-controls">
-              <!-- Search bar -->
-              <div class="search-wrapper">
-                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input 
-                  type="text" 
-                  class="search-input" 
-                  placeholder="Search day..." 
-                  oninput="handleSearch(event)"
-                  aria-label="Search attendance days"
-                >
+          
+          <!-- Faculty Upload Attendance Container -->
+          <div id="facultyAttendanceView" style="display: none;">
+            <div class="erp-card" style="margin-bottom: 2rem;">
+              <div class="attendance-controls" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 1rem; align-items: flex-end; justify-content: space-between; width: 100%;">
+                <div style="display: flex; flex-direction: row; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                  
+                  <!-- Attendance Date Picker (HOD Only) -->
+                  <div class="form-group" id="hodDateGroup" style="margin-bottom:0; display: none;">
+                    <label class="form-label" for="facultyDateInput" style="font-size:0.8rem; margin-bottom:4px;">Attendance Date</label>
+                    <input type="date" id="facultyDateInput" class="form-input" style="padding: 0.5rem 0.8rem; width: auto;" onchange="handleFacultyBranchOrDateChange()">
+                  </div>
+
+                  <!-- Subject Dropdown -->
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" for="facultySubjectSelect" style="font-size:0.8rem; margin-bottom:4px;">Subject</label>
+                    <select id="facultySubjectSelect" class="form-input" style="padding: 0.5rem 0.8rem; width: auto;">
+                      <option value="REL">REL (Renewable Energy & Logistics)</option>
+                      <option value="HR&PM">HR&PM (Human Resources & Project Mgmt)</option>
+                      <option value="BCT">BCT (Blockchain Technology)</option>
+                      <option value="BDA">BDA (Big Data Analytics)</option>
+                      <option value="EMI">EMI (Electromagnetic Induction)</option>
+                      <option value="OM">OM (Operations Management)</option>
+                      <option value="WT">WT (Web Technologies)</option>
+                      <option value="CD">CD (Compiler Design)</option>
+                      <option value="SE">SE (Software Engineering)</option>
+                      <option value="DBMS">DBMS (Database Management)</option>
+                    </select>
+                  </div>
+
+                  <!-- Semester Dropdown -->
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" for="facultySemesterSelect" style="font-size:0.8rem; margin-bottom:4px;">Semester</label>
+                    <select id="facultySemesterSelect" class="form-input" style="padding: 0.5rem 0.8rem; width: auto;" onchange="handleFacultySemesterChange()">
+                      <option value="Sem 1">Sem 1 (I Year - I Sem)</option>
+                      <option value="Sem 2">Sem 2 (I Year - II Sem)</option>
+                      <option value="Sem 3">Sem 3 (II Year - I Sem)</option>
+                      <option value="Sem 4">Sem 4 (II Year - II Sem)</option>
+                      <option value="Sem 5">Sem 5 (III Year - I Sem)</option>
+                      <option value="Sem 6" selected>Sem 6 (III Year - II Sem)</option>
+                      <option value="Sem 7">Sem 7 (IV Year - I Sem)</option>
+                      <option value="Sem 8">Sem 8 (IV Year - II Sem)</option>
+                    </select>
+                  </div>
+
+                  <!-- Year Dropdown -->
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" for="facultyYearSelect" style="font-size:0.8rem; margin-bottom:4px;">Filter by Year</label>
+                    <select id="facultyYearSelect" class="form-input" style="padding: 0.5rem 0.8rem; width: auto;" onchange="handleFacultyYearChange()">
+                      <option value="ALL">All Years</option>
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
+                    </select>
+                  </div>
+
+                  <!-- Branch Dropdown -->
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" for="facultyBranchSelect" style="font-size:0.8rem; margin-bottom:4px;">Filter by Branch</label>
+                    <select id="facultyBranchSelect" class="form-input" style="padding: 0.5rem 0.8rem; width: auto;" onchange="handleFacultyBranchOrDateChange()">
+                      <option value="ALL">All Branches</option>
+                      <option value="CSE">CSE (Computer Science & Engineering)</option>
+                      <option value="CST">CST (Computer Science & Technology)</option>
+                      <option value="CSE-AIML">CSE - Artificial Intelligence & ML</option>
+                      <option value="CSE-DS">CSE - Data Science</option>
+                      <option value="AI & DS">AI & DS (Artificial Intelligence & Data Science)</option>
+                      <option value="ECE">ECE (Electronics & Communication)</option>
+                      <option value="EEE">EEE (Electrical & Electronics)</option>
+                      <option value="Civil">Civil Engineering</option>
+                      <option value="Mechanical">Mechanical Engineering</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                  <button type="button" class="filter-pill-btn active" onclick="setAllFacultyCheckboxes(true)" style="padding:0.45rem 1rem;">Select All Present</button>
+                  <button type="button" class="filter-pill-btn" onclick="setAllFacultyCheckboxes(false)" style="padding:0.45rem 1rem;">Unselect All (Absent)</button>
+                </div>
               </div>
 
-              <!-- Filter Pills -->
-              <div class="filter-pills" role="group" aria-label="Filter Attendance Logs">
-                <button class="filter-pill-btn active" id="pill-all" onclick="setFilterPill('all')">All logs</button>
-                <button class="filter-pill-btn" id="pill-p" onclick="setFilterPill('p')">P Presents</button>
-                <button class="filter-pill-btn" id="pill-a" onclick="setFilterPill('a')">A Absents</button>
-                <button class="filter-pill-btn" id="pill-h" onclick="setFilterPill('h')">H Holidays</button>
+              <!-- Student Attendance Checkbox List Table -->
+              <div class="table-container" style="margin-top: 1rem;">
+                <table class="grid-table" style="min-width: 600px;">
+                  <thead>
+                    <tr>
+                      <th scope="col" style="width: 100px; text-align: center;">Present</th>
+                      <th scope="col" style="text-align: left;">Roll Number</th>
+                      <th scope="col" style="text-align: left;">Student Name</th>
+                      <th scope="col" style="text-align: left;">Branch</th>
+                    </tr>
+                  </thead>
+                  <tbody id="facultyStudentTableBody">
+                    <!-- Populated dynamically in dashboard.js -->
+                  </tbody>
+                </table>
               </div>
-            </div>
 
-            <!-- Attendance Data Table Layout -->
-            <div class="table-container">
-              <table class="grid-table" style="min-width: 500px;">
-                <thead>
-                  <tr>
-                    <th scope="col" style="text-align: left; padding-left: 2rem;">Academic Day Name</th>
-                    <th scope="col" style="text-align: left; padding-left: 1rem;">Daily Attendance Status</th>
-                  </tr>
-                </thead>
-                <tbody id="attendanceTableBody">
-                  <!-- Populated dynamically in dashboard.js -->
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Table Pagination component footer -->
-            <div class="pagination-container">
-              <span class="pagination-info" id="paginationInfoText">Showing 0 to 0 of 0 records</span>
-              <div class="pagination-buttons">
-                <button class="pag-btn" id="btnPrevPage" onclick="prevPage()" aria-label="Previous Page" disabled>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              <!-- Submit Attendance Bar -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 1rem;">
+                <div id="facultySummaryStats" style="font-weight: 750; color: var(--dark); font-size: 0.9rem;">
+                  Total: 0 | Present: 0 | Absent: 0
+                </div>
+                <button type="button" class="submit-btn" id="btnSubmitFacultyAttendance" onclick="submitFacultyAttendanceHandler()" style="width: auto; padding: 0.75rem 2.2rem;">
+                  <span>Submit Attendance</span>
                 </button>
-                <button class="pag-btn" id="btnNextPage" onclick="nextPage()" aria-label="Next Page" disabled>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </button>
               </div>
             </div>
-
           </div>
+
+          <!-- Student Attendance Logs View Container -->
+          <div id="studentAttendanceView" style="display: block;">
+            <div class="erp-card" style="margin-bottom: 2rem;">
+              
+              <!-- Top Sub-Navigation (ATTENDANCE | EXAMS) -->
+              <div style="display: flex; gap: 2rem; border-bottom: 2px solid var(--border-color); margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
+                <div style="font-weight: 800; font-size: 1rem; color: var(--primary); border-bottom: 3px solid var(--primary); padding-bottom: 0.5rem; margin-bottom: -0.65rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;">
+                  ATTENDANCE
+                </div>
+                <div style="font-weight: 800; font-size: 1rem; color: #94a3b8; padding-bottom: 0.5rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;" onclick="openLockedFeature('exams')">
+                  EXAMS
+                </div>
+              </div>
+
+              <!-- Sub Time Filter Pills (TODAY | OVERALL | YESTERDAY) -->
+              <div style="background: var(--light-gray); border-radius: 12px; padding: 6px; display: inline-flex; gap: 6px; margin-bottom: 1.5rem;">
+                <button class="filter-pill-btn active" id="subpill-today" onclick="setSubjectTimeFilter('today')" style="padding: 0.45rem 1.4rem; border-radius: 8px;">TODAY</button>
+                <button class="filter-pill-btn" id="subpill-overall" onclick="setSubjectTimeFilter('overall')" style="padding: 0.45rem 1.4rem; border-radius: 8px;">OVERALL</button>
+                <button class="filter-pill-btn" id="subpill-yesterday" onclick="setSubjectTimeFilter('yesterday')" style="padding: 0.45rem 1.4rem; border-radius: 8px;">YESTERDAY</button>
+              </div>
+
+              <!-- Subject Attendance List Cards (Matching First Image Reference) -->
+              <div id="studentSubjectAttendanceList" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                <!-- Populated dynamically in dashboard.js -->
+              </div>
+
+            </div>
+          </div>
+
         </section>
 
         <!-- ==========================================================================
              SECTION 3: TARGET CALCULATOR PAGE
              ========================================================================== -->
         <section class="portal-section" id="calculatorSection">
-          <div class="erp-card">
-            <div class="calculator-split-layout">
+          <div style="display: flex; justify-content: center; align-items: center; width: 100%; min-height: 65vh; padding: 1.5rem 0;">
+            <div class="target-calc-big-card">
+              <h3 class="target-calc-title">TARGET CALCULATOR</h3>
               
-              <!-- Inputs Panel Column -->
-              <div class="calc-inputs-col">
-                <!-- Target percent slider card -->
-                <div class="slider-container">
-                  <div class="slider-header">
-                    <span class="slider-lbl">Target Attendance Rate</span>
-                    <span class="slider-value-display"><span id="targetVal">75</span>%</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    id="targetRangeSlider" 
-                    class="visual-slider" 
-                    min="50" 
-                    max="100" 
-                    value="75"
-                    oninput="handleSliderChange(this.value)"
-                  >
-                  <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8; font-weight:700;">
-                    <span>50%</span>
-                    <span>75%</span>
-                    <span>100%</span>
-                  </div>
-                </div>
-
-                <!-- Classes per day adjuster dial -->
-                <div class="calc-row">
-                  <span class="calc-label">Classes Conducted / Day</span>
-                  <div class="calc-controls">
-                    <button type="button" class="calc-btn" onclick="adjustClassesPerDayValue(-1)">&minus;</button>
-                    <span class="calc-val" id="classesPerDayVal">7</span>
-                    <button type="button" class="calc-btn" onclick="adjustClassesPerDayValue(1)">&plus;</button>
-                  </div>
+              <!-- Row 1: TARGET % -->
+              <div class="target-calc-row">
+                <span class="target-calc-label">TARGET %</span>
+                <div class="target-calc-stepper">
+                  <button type="button" class="stepper-btn" onclick="adjustTargetValue(-1)">&minus;</button>
+                  <span class="stepper-value" id="targetVal">75</span>
+                  <button type="button" class="stepper-btn" onclick="adjustTargetValue(1)">&plus;</button>
                 </div>
               </div>
 
-              <!-- Output Projections display card -->
-              <div class="calc-result-card warning-zone" id="calcResultCard">
-                <div class="calc-result-icon" id="calcResultIcon">⚠️</div>
-                <h4 class="calc-result-status" id="calcResultStatus">Calculating...</h4>
-                <p class="calc-result-text" id="calcResultText">Enter your target percentages to view upcoming projection details.</p>
+              <!-- Row 2: CLASSES / DAY -->
+              <div class="target-calc-row">
+                <span class="target-calc-label">CLASSES / DAY</span>
+                <div class="target-calc-stepper">
+                  <button type="button" class="stepper-btn" onclick="adjustClassesPerDayValue(-1)">&minus;</button>
+                  <span class="stepper-value" id="classesPerDayVal">7</span>
+                  <button type="button" class="stepper-btn" onclick="adjustClassesPerDayValue(1)">&plus;</button>
+                </div>
               </div>
 
+              <!-- Result Text Output (Matching Reference Image) -->
+              <div class="target-calc-result" id="targetCalcResultMsg">
+                Calculating attendance projections...
+              </div>
             </div>
           </div>
         </section>

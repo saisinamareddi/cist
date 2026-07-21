@@ -1463,10 +1463,103 @@ body {
 /* ==========================================================================
    UPGRADED TARGET CALCULATOR
    ========================================================================== */
-.calculator-split-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+.target-calc-big-card {
+  background: var(--light-gray);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 3.5rem 4rem;
+  max-width: 800px;
+  width: 100%;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.target-calc-title {
+  font-family: "Outfit", sans-serif;
+  font-weight: 850;
+  font-size: 1.45rem;
+  letter-spacing: 1.8px;
+  color: #475569;
+  margin-bottom: 2.75rem;
+  text-transform: uppercase;
+}
+
+body.dark-theme .target-calc-title {
+  color: var(--dark);
+}
+
+.target-calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.25rem;
+}
+
+.target-calc-label {
+  font-family: "Outfit", sans-serif;
+  font-weight: 850;
+  font-size: 1.1rem;
+  color: #475569;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+body.dark-theme .target-calc-label {
+  color: var(--dark);
+}
+
+.target-calc-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border-color);
+  border-radius: 14px;
+  padding: 6px 14px;
+  width: 220px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.stepper-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.stepper-btn:hover {
+  background: var(--light-gray);
+  color: var(--primary);
+}
+
+.stepper-value {
+  font-family: "Outfit", sans-serif;
+  font-weight: 850;
+  font-size: 1.45rem;
+  color: var(--dark);
+  min-width: 50px;
+  text-align: center;
+}
+
+.target-calc-result {
+  margin-top: 2.75rem;
+  font-family: "Poppins", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.45;
+  color: #e11d48;
+}
+
+.target-calc-result.safe {
+  color: #16a34a;
 }
 
 @media (max-width: 768px) {
