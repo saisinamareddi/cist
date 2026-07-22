@@ -8,6 +8,12 @@ const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL ||
 
 const STORAGE_KEY = 'cist_attendance_records';
 
+export const getLocalDateString = (d = new Date()) => {
+  const offset = d.getTimezoneOffset();
+  const localDate = new Date(d.getTime() - (offset * 60 * 1000));
+  return localDate.toISOString().split('T')[0];
+};
+
 export const getLocalAttendanceRecords = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -49,7 +55,7 @@ export async function submitFacultyAttendance(records) {
   existing.forEach((r) => recordMap.set(mapKey(r), r));
   records.forEach((r) => {
     const cleanRecord = {
-      date: String(r.date || new Date().toISOString().split('T')[0]).trim(),
+      date: String(r.date || getLocalDateString()).trim(),
       rollNumber: String(r.rollNumber || r.roll).trim().toUpperCase(),
       studentName: String(r.studentName || r.name || '').trim(),
       branch: String(r.branch || '').trim(),

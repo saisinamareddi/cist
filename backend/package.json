@@ -2,10 +2,10 @@
   "name": "cist-attendance-backend",
   "version": "1.0.0",
   "description": "Backend API for CIST attendance portal",
-  "main": "src/server.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "node --watch src/server.js",
-    "start": "node src/server.js",
+    "dev": "node --watch server.js",
+    "start": "node server.js",
     "import:students": "node scripts/importStudents.js"
   },
   "dependencies": {

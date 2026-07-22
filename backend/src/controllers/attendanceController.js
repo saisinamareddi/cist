@@ -1,6 +1,12 @@
 const Attendance = require('../models/Attendance');
 const Student = require('../models/Student');
 
+const getISTDateString = (d = new Date()) => {
+  const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+  const istDate = new Date(utc + (3600000 * 5.5)); // IST is UTC+5.5
+  return istDate.toISOString().split('T')[0];
+};
+
 const uploadAttendance = async (req, res) => {
   const records = req.body.records || (Array.isArray(req.body) ? req.body : []);
 
@@ -13,7 +19,7 @@ const uploadAttendance = async (req, res) => {
 
   try {
     const ops = records.map((rec) => {
-      const date = String(rec.date || new Date().toISOString().split('T')[0]).trim();
+      const date = String(rec.date || getISTDateString()).trim();
       const rollNumber = String(rec.rollNumber || rec.roll).trim().toUpperCase();
       const subject = String(rec.subject || 'General').trim();
       const semester = String(rec.semester || '6th Sem').trim();

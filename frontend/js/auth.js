@@ -86,7 +86,10 @@ const loginStudent = async (rollNumber, password) => {
     const result = await response.json().catch(() => ({}));
 
     if (response.ok && result.success && result.student) {
+      const { studentDb } = await import('./db.js');
+      const localStudent = studentDb[cleanRoll] || {};
       return {
+        ...localStudent,
         ...result.student,
         roll: result.student.rollNumber,
         avatar: getInitials(result.student.name),
@@ -130,7 +133,10 @@ const loginFaculty = async (employeeId, password) => {
     const result = await response.json().catch(() => ({}));
 
     if (response.ok && result.success && result.faculty) {
+      const { facultyDb } = await import('./db.js');
+      const localFaculty = facultyDb[cleanId] || facultyDb[cleanId.toUpperCase()] || {};
       return {
+        ...localFaculty,
         ...result.faculty,
         roll: result.faculty.employeeId || result.faculty.roll || cleanId,
         avatar: result.faculty.avatar || getInitials(result.faculty.name),
@@ -182,6 +188,7 @@ export async function handleLoginSubmit(event) {
       activeStudent = await loginStudent(identifier, password);
     }
     window.activeStudent = activeStudent;
+    localStorage.setItem('cist-session', JSON.stringify(activeStudent));
 
     window.Toast.success(`Welcome back, ${activeStudent.name}!`, 'Login Successful');
     window.loadRedesignedPortal(activeStudent);
@@ -212,6 +219,8 @@ export function handleLogOut() {
     document.getElementById('password').value = '';
     activeStudent = null;
     window.activeStudent = null;
+    localStorage.removeItem('cist-session');
+    localStorage.removeItem('cist-current-tab');
 
     loginCard.offsetHeight;
     loginCard.style.opacity = '1';

@@ -1,6 +1,6 @@
 // CIST ERP Dashboard Controller
 import { noticeDb, studentDb } from './db.js';
-import { submitFacultyAttendance, fetchStudentAttendanceRecords } from './attendanceService.js';
+import { submitFacultyAttendance, fetchStudentAttendanceRecords, getLocalDateString } from './attendanceService.js';
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 
   ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -25,6 +25,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('dark-theme');
     const toggle = document.getElementById('themeToggleBtn');
     if (toggle) toggle.textContent = '🌙';
+  }
+
+  // Restore session from localStorage to prevent automatic logout on refresh
+  const savedSession = localStorage.getItem('cist-session');
+  if (savedSession) {
+    try {
+      const student = JSON.parse(savedSession);
+      if (student) {
+        // Run slightly after DOM settles to allow Vite elements to load
+        setTimeout(() => {
+          loadRedesignedPortal(student);
+        }, 100);
+      }
+    } catch (e) {
+      console.error('Failed to restore student session:', e);
+    }
   }
 });
 
@@ -70,10 +86,8 @@ export async function loadRedesignedPortal(student) {
     try {
       const res = await fetchStudentAttendanceRecords(roll);
       if (res && res.success && Array.isArray(res.records)) {
-        if (res.conducted > 0) {
-          activeStudent.conducted = res.conducted;
-          activeStudent.attended = res.attended;
-        }
+        activeStudent.conducted = res.conducted || 0;
+        activeStudent.attended = res.attended || 0;
         activeStudent.attendanceHistory = res.records;
       }
     } catch (e) {
@@ -81,12 +95,16 @@ export async function loadRedesignedPortal(student) {
     }
   }
 
+  // Set window global and dispatch custom event for React module integration
+  window.activeStudent = activeStudent;
+  window.dispatchEvent(new CustomEvent('student-loaded', { detail: activeStudent }));
+
   // Set default subject options and date picker for faculty vs HOD
   if (activeStudent.role === 'faculty') {
     const isHod = activeStudent?.isHod || activeStudent?.roll === 'CSEHOD1' || activeStudent?.assignedSubjects?.includes('*');
     const hodDateGroup = document.getElementById('hodDateGroup');
     const dateInput = document.getElementById('facultyDateInput');
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
 
     if (hodDateGroup) {
       if (isHod) {
@@ -109,8 +127,9 @@ export async function loadRedesignedPortal(student) {
   // Set student profile detail readouts
   updateStudentProfileDOM();
   
-  // Reset navigation to default Dashboard tab
-  switchSection('dashboard');
+  // Reset navigation to default Dashboard or persisted tab
+  const savedTab = localStorage.getItem('cist-current-tab') || 'dashboard';
+  switchSection(savedTab);
   
   // Render dashboard elements
   renderDashboardOverview();
@@ -523,7 +542,7 @@ export async function submitFacultyAttendanceHandler() {
   const checkboxes = document.querySelectorAll('.faculty-chk-present');
   const dateInput = document.getElementById('facultyDateInput');
   const isHod = activeStudent?.isHod || activeStudent?.roll === 'CSEHOD1' || activeStudent?.assignedSubjects?.includes('*');
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString();
   let dateVal = todayStr;
   if (isHod && dateInput && dateInput.value) {
     dateVal = dateInput.value;
@@ -646,10 +665,10 @@ function renderStudentAttendanceLogs() {
 
   const allRecords = activeStudent?.attendanceHistory || [];
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString();
   const yesterdayDate = new Date();
   yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+  const yesterdayStr = getLocalDateString(yesterdayDate);
 
   let filteredRecords = allRecords;
   if (currentSubjectTimeFilter === 'today') {
@@ -693,7 +712,7 @@ function renderStudentAttendanceLogs() {
     }
 
     const percentage = conductedDisplay > 0 ? Math.round((attendedDisplay / conductedDisplay) * 100) : 0;
-    const isSuccess = percentage > 0;
+    const isSuccess = percentage >= 75;
 
     const card = document.createElement('div');
     card.style.cssText = `
@@ -720,12 +739,12 @@ function renderStudentAttendanceLogs() {
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 3px solid ${isSuccess ? '#3b82f6' : '#cbd5e1'};
+        border: 3px solid ${isSuccess ? '#3b82f6' : '#ef4444'};
         color: ${isSuccess ? '#2563eb' : '#ef4444'};
         font-family: 'Outfit', sans-serif;
         font-weight: 850;
         font-size: 0.95rem;
-        background: ${isSuccess ? 'rgba(59, 130, 246, 0.05)' : 'rgba(241, 245, 249, 0.5)'};
+        background: ${isSuccess ? 'rgba(59, 130, 246, 0.05)' : 'rgba(239, 68, 68, 0.05)'};
       ">
         ${percentage}
       </div>
@@ -929,6 +948,7 @@ export function switchSection(sectionId) {
   
   if (currentTab === sectionId) return;
   currentTab = sectionId;
+  localStorage.setItem('cist-current-tab', sectionId);
 
   // Toggle active styling on sidebar items
   const menuItems = document.querySelectorAll('.menu-item');
@@ -945,6 +965,8 @@ export function switchSection(sectionId) {
   if (titleDisplay) {
     if (sectionId === 'attendance') {
       titleDisplay.textContent = activeStudent?.role === 'faculty' ? 'Upload Attendance' : 'Attendance List';
+    } else if (sectionId === 'academicRegister') {
+      titleDisplay.textContent = 'Academic Register';
     } else {
       const formattedName = sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace('_', ' ');
       titleDisplay.textContent = formattedName;

@@ -90,6 +90,116 @@ const getInitials = (name) => {
     .join('') || 'ST';
 };
 
+const getMockHistoryForStudent = (roll, name, branch) => {
+  const records = [];
+  const base = { rollNumber: roll, studentName: name, branch: branch, semester: 'Sem 6' };
+
+  const add = (subj, date, statuses) => {
+    statuses.split('').forEach(status => {
+      records.push({
+        ...base,
+        date,
+        subject: subj,
+        status: status === 'P' ? 'P' : 'A'
+      });
+    });
+  };
+
+  // REL (11 conducted, 8 attended)
+  add('REL', '2026-06-29', 'P');
+  add('REL', '2026-07-01', 'A');
+  add('REL', '2026-07-07', 'P');
+  add('REL', '2026-07-08', 'P');
+  add('REL', '2026-07-13', 'AP');
+  add('REL', '2026-07-14', 'P');
+  add('REL', '2026-07-15', 'P');
+  add('REL', '2026-07-20', 'PP');
+  add('REL', '2026-07-21', 'A');
+
+  // HR&PM (22 conducted, 8 attended)
+  add('HR&PM', '2026-07-01', 'A');
+  add('HR&PM', '2026-07-02', 'A');
+  add('HR&PM', '2026-07-03', 'AAA');
+  add('HR&PM', '2026-07-06', 'AA');
+  add('HR&PM', '2026-07-07', 'A');
+  add('HR&PM', '2026-07-08', 'P');
+  add('HR&PM', '2026-07-09', 'A');
+  add('HR&PM', '2026-07-10', 'AA');
+  add('HR&PM', '2026-07-13', 'AA');
+  add('HR&PM', '2026-07-14', 'P');
+  add('HR&PM', '2026-07-15', 'P');
+  add('HR&PM', '2026-07-16', 'P');
+  add('HR&PM', '2026-07-17', 'AP');
+  add('HR&PM', '2026-07-20', 'PP');
+  add('HR&PM', '2026-07-21', 'P');
+
+  // BCT (25 conducted, 20 attended)
+  add('BCT', '2026-06-29', 'PPPPPP');
+  add('BCT', '2026-07-01', 'A');
+  add('BCT', '2026-07-06', 'PPP');
+  add('BCT', '2026-07-07', 'P');
+  add('BCT', '2026-07-08', 'PP');
+  add('BCT', '2026-07-09', 'AA');
+  add('BCT', '2026-07-10', 'A');
+  add('BCT', '2026-07-13', 'A');
+  add('BCT', '2026-07-14', 'P');
+  add('BCT', '2026-07-15', 'P');
+  add('BCT', '2026-07-16', 'PPPP');
+  add('BCT', '2026-07-20', 'P');
+  add('BCT', '2026-07-21', 'P');
+
+  // BDA (20 conducted, 9 attended)
+  add('BDA', '2026-06-30', 'AAAAAPA');
+  add('BDA', '2026-07-01', 'A');
+  add('BDA', '2026-07-02', 'A');
+  add('BDA', '2026-07-03', 'A');
+  add('BDA', '2026-07-07', 'AA');
+  add('BDA', '2026-07-08', 'P');
+  add('BDA', '2026-07-09', 'A');
+  add('BDA', '2026-07-14', 'PP');
+  add('BDA', '2026-07-15', 'P');
+  add('BDA', '2026-07-16', 'P');
+  add('BDA', '2026-07-17', 'P');
+  add('BDA', '2026-07-21', 'PP');
+
+  // EMI (17 conducted, 9 attended)
+  add('EMI', '2026-06-30', 'A');
+  add('EMI', '2026-07-01', 'AA');
+  add('EMI', '2026-07-02', 'A');
+  add('EMI', '2026-07-06', 'A');
+  add('EMI', '2026-07-07', 'P');
+  add('EMI', '2026-07-08', 'P');
+  add('EMI', '2026-07-09', 'A');
+  add('EMI', '2026-07-10', 'A');
+  add('EMI', '2026-07-13', 'P');
+  add('EMI', '2026-07-14', 'P');
+  add('EMI', '2026-07-15', 'PP');
+  add('EMI', '2026-07-16', 'P');
+  add('EMI', '2026-07-17', 'P');
+  add('EMI', '2026-07-20', 'P');
+  add('EMI', '2026-07-21', 'A');
+
+  // OM (18 conducted, 5 attended)
+  add('OM', '2026-07-01', 'A');
+  add('OM', '2026-07-03', 'AAA');
+  add('OM', '2026-07-06', 'AA');
+  add('OM', '2026-07-07', 'A');
+  add('OM', '2026-07-08', 'P');
+  add('OM', '2026-07-10', 'AAA');
+  add('OM', '2026-07-13', 'A');
+  add('OM', '2026-07-14', 'P');
+  add('OM', '2026-07-15', 'P');
+  add('OM', '2026-07-17', 'APP');
+  add('OM', '2026-07-20', 'A');
+  add('OM', '2026-07-21', 'A');
+
+  // PE (6 conducted, 0 attended)
+  add('PE', '2026-07-02', 'AAAA');
+  add('PE', '2026-07-09', 'AA');
+
+  return records;
+};
+
 const buildStudentDb = () => {
   const db = {};
 
@@ -103,6 +213,10 @@ const buildStudentDb = () => {
     const sem = String(item.semester || item.Semester || (year === 3 ? "3-1" : "4-1")).trim();
     const acadYear = String(item.academicYear || item.AcademicYear || "2024-2028").trim();
 
+    const mockHistory = getMockHistoryForStudent(roll, name, branch);
+    const cond = mockHistory.length;
+    const att = mockHistory.filter(x => x.status === 'P').length;
+
     db[roll] = {
       roll,
       password: roll,
@@ -113,8 +227,8 @@ const buildStudentDb = () => {
       semester: sem,
       academicYear: acadYear,
       avatar: getInitials(name),
-      conducted: 120,
-      attended: 95,
+      conducted: cond,
+      attended: att,
       weekly: { 1: "P", 2: "P", 3: "P", 4: "P", 5: "A", 6: "P", 0: "H" },
       monthlyAttendance: [
         { month: "Jan", conducted: 20, attended: 18 },
@@ -129,7 +243,8 @@ const buildStudentDb = () => {
         { type: "attendance", title: "Compiler Design (T)", status: "Present", time: "Yesterday, 02:15 PM" },
         { type: "attendance", title: "Software Engineering (L)", status: "Present", time: "15 July, 11:30 AM" },
         { type: "notice", title: "Mid-Term Exam Schedule", status: "Announced", time: "14 July, 04:00 PM" }
-      ]
+      ],
+      attendanceHistory: mockHistory
     };
 
     // Also map alt roll with O/0 substitution if applicable
@@ -157,6 +272,34 @@ const buildStudentDb = () => {
     ],
     recentActivity: []
   };
+
+  // Merge saved attendance records from localStorage to ensure persistence across refresh/logout in mock/offline mode
+  try {
+    const raw = localStorage.getItem('cist_attendance_records');
+    const localRecords = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(localRecords)) {
+      localRecords.forEach((r) => {
+        const roll = String(r.rollNumber || r.roll || '').trim().toUpperCase();
+        if (db[roll]) {
+          const s = db[roll];
+          s.attendanceHistory = s.attendanceHistory || [];
+          const idx = s.attendanceHistory.findIndex((x) => x.date === r.date && x.subject === r.subject);
+          if (idx >= 0) s.attendanceHistory[idx] = r;
+          else s.attendanceHistory.push(r);
+        }
+      });
+      // Recalculate conducted/attended for all students with local history
+      Object.keys(db).forEach((roll) => {
+        const s = db[roll];
+        if (s.attendanceHistory && s.attendanceHistory.length > 0) {
+          s.conducted = s.attendanceHistory.length;
+          s.attended = s.attendanceHistory.filter((x) => x.status === 'P' || x.status === 'Present').length;
+        }
+      });
+    }
+  } catch (e) {
+    console.error('Failed to load localStorage records into studentDb:', e);
+  }
 
   return db;
 };

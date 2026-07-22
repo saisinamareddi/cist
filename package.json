@@ -3,12 +3,18 @@
   "version": "1.0.2",
   "description": "CHAITANYA Institute of Science and Technology Portal",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "vite",
+    "dev:backend": "npm --prefix backend run dev",
     "build": "vite build",
     "preview": "vite preview"
   },
-  "dependencies": {},
   "devDependencies": {
+    "concurrently": "^10.0.3",
     "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }

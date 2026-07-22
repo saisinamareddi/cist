@@ -969,6 +969,10 @@ body {
   line-height: 1.2;
 }
 
+#missedClassesVal {
+  color: var(--danger) !important;
+}
+
 .metric-lbl {
   font-size: 0.72rem;
   font-weight: 700;
@@ -1940,5 +1944,351 @@ body.dark-theme .target-calc-label {
   .metrics-grid {
     grid-template-columns: 1fr; /* Stack metrics on mobile */
     gap: 1rem;
+  }
+}
+
+/* Academic Register Styles */
+.academic-register-wrapper {
+  margin-top: 1rem;
+  font-family: 'Outfit', sans-serif;
+  color: var(--dark);
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.academic-register-header {
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.register-title-bar {
+  background: #1e3a8a; /* Deep blue header */
+  color: white;
+  padding: 0.75rem 1.25rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.register-info-box {
+  padding: 1.25rem;
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.college-title {
+  font-size: 1.05rem;
+  font-weight: 850;
+  text-align: center;
+  color: #111827;
+}
+
+.college-subtitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  color: #4b5563;
+}
+
+.college-doc-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-align: center;
+  color: #1e3a8a;
+  margin-top: 0.25rem;
+  text-decoration: underline;
+}
+
+.student-meta-row {
+  font-size: 0.9rem;
+  color: #1f2937;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0.25rem;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 2px;
+}
+
+.academic-register-table-wrapper {
+  overflow: auto !important;
+  max-height: 450px;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  background: var(--card-bg);
+}
+
+.academic-register-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate; /* Required for sticky borders to align correctly */
+  border-spacing: 0;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.academic-register-table th,
+.academic-register-table td {
+  box-sizing: border-box;
+  min-width: 65px;
+  width: 65px;
+}
+
+.academic-register-table th {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-weight: 800;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #cbd5e1;
+  border-right: 1px solid #cbd5e1;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.3px;
+  position: sticky;
+  top: 0;
+  z-index: 4; /* Kept above cells */
+}
+
+.academic-register-table td {
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid #cbd5e1;
+  border-right: 1px solid #cbd5e1;
+  color: #334155;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* First Column (Sl.No) - Frozen Left */
+.academic-register-table th:first-child,
+.academic-register-table td:first-child {
+  min-width: 60px;
+  width: 60px;
+  position: sticky;
+  left: 0;
+  background: var(--card-bg) !important;
+  z-index: 6;
+  border-right: 1px solid #cbd5e1;
+}
+
+.academic-register-table th:first-child {
+  z-index: 8;
+  background: #f1f5f9 !important;
+}
+
+/* Second Column (Subject Name) - Frozen Left */
+.academic-register-table th:nth-child(2),
+.academic-register-table td:nth-child(2) {
+  min-width: 120px;
+  width: 120px;
+  text-align: left;
+  position: sticky;
+  left: 60px; /* Offset by first column's width */
+  background: var(--card-bg) !important;
+  z-index: 6;
+  border-right: 2px solid #94a3b8; /* Strong separator line */
+}
+
+.academic-register-table th:nth-child(2) {
+  z-index: 8;
+  background: #f1f5f9 !important;
+}
+
+/* Second to Last Column (Atted/Held) */
+.academic-register-table th:nth-last-child(2),
+.academic-register-table td:nth-last-child(2) {
+  min-width: 100px;
+  width: 100px;
+}
+
+/* Last Column (%) */
+.academic-register-table th:last-child,
+.academic-register-table td:last-child {
+  min-width: 70px;
+  width: 70px;
+  border-right: none;
+}
+
+.academic-register-table tr:hover {
+  background: #f8fafc;
+}
+
+.academic-register-footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+
+.register-btn {
+  border: none;
+  padding: 0.6rem 1.6rem;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: white;
+}
+
+.register-btn.btn-print {
+  background-color: #06b6d4; /* Cyan */
+}
+
+.register-btn.btn-print:hover {
+  background-color: #0891b2;
+}
+
+.register-btn.btn-export {
+  background-color: #0ea5e9; /* Sky Blue */
+}
+
+.register-btn.btn-export:hover {
+  background-color: #0284c7;
+}
+
+.register-btn.btn-cancel {
+  background-color: #64748b; /* Gray */
+}
+
+.register-btn.btn-cancel:hover {
+  background-color: #475569;
+}
+
+/* Custom Horizontal Scrollbar Styling for Academic Register */
+.academic-register-table-wrapper::-webkit-scrollbar {
+  height: 16px;
+  background-color: #f1f1f1;
+}
+
+.academic-register-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-top: 1px solid #dcdcdc;
+  border-bottom: 1px solid #dcdcdc;
+}
+
+.academic-register-table-wrapper::-webkit-scrollbar-thumb {
+  background: #a9a9a9; 
+  border-radius: 8px;
+  border: 3px solid #f1f1f1;
+}
+
+.academic-register-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #888888; 
+}
+
+/* Custom Scrollbar Arrow Buttons */
+.academic-register-table-wrapper::-webkit-scrollbar-button:single-button:horizontal:decrement {
+  background: #f1f1f1 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23757575"><path d="M14 7l-5 5 5 5V7z"/></svg>') no-repeat center center;
+  background-size: 10px;
+  width: 18px;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px 0 0 4px;
+}
+
+.academic-register-table-wrapper::-webkit-scrollbar-button:single-button:horizontal:decrement:hover {
+  background-color: #e5e5e5;
+}
+
+.academic-register-table-wrapper::-webkit-scrollbar-button:single-button:horizontal:increment {
+  background: #f1f1f1 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23757575"><path d="M10 17l5-5-5-5v10z"/></svg>') no-repeat center center;
+  background-size: 10px;
+  width: 18px;
+  border: 1px solid #dcdcdc;
+  border-radius: 0 4px 4px 0;
+}
+
+.academic-register-table-wrapper::-webkit-scrollbar-button:single-button:horizontal:increment:hover {
+  background-color: #e5e5e5;
+}
+
+/* Print CSS overrides to export ONLY academic register data */
+@media print {
+  /* Hide overall portal layout wrappers */
+  .portal-sidebar,
+  .portal-header,
+  .theme-toggle-container,
+  .metrics-grid,
+  .activities-timeline,
+  .locked-module-view,
+  .helpers-row,
+  .alert-banner,
+  .target-calc-big-card,
+  button,
+  .btn,
+  .register-btn {
+    display: none !important;
+  }
+
+  /* Reset main layout grid and margins */
+  .portal-main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+  }
+
+  .portal-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Hide all dashboard sections except Academic Register */
+  .portal-section {
+    display: none !important;
+  }
+
+  #academicRegisterSection {
+    display: block !important;
+  }
+
+  /* Ensure colors and background gradients render accurately */
+  .bg-gradient-to-r,
+  .bg-blue-600,
+  .bg-indigo-800 {
+    background: #1e3a8a !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .text-green-600 {
+    color: #16a34a !important;
+  }
+
+  .text-red-500,
+  .text-red-600 {
+    color: #dc2626 !important;
+  }
+
+  /* Expand table scroll wrapper for print sheets */
+  .academic-register-table-wrapper,
+  .overflow-x-auto {
+    overflow: visible !important;
+    max-height: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  table {
+    width: 100% !important;
+    page-break-inside: avoid;
   }
 }
